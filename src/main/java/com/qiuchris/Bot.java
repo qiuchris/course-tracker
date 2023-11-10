@@ -1,7 +1,5 @@
 package com.qiuchris;
 
-import com.qiuchris.util.SlashListener;
-import com.qiuchris.util.TaskScheduler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;

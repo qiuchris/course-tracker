@@ -1,6 +1,4 @@
-package com.qiuchris.util;
-
-import com.qiuchris.Bot;
+package com.qiuchris;
 
 import java.io.IOException;
 import java.nio.file.Files;
