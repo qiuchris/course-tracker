@@ -9,9 +9,9 @@ import java.util.concurrent.TimeUnit;
 
 public class SlashListener extends ListenerAdapter {
     private Bot bot;
-    private TaskScheduler ts;
+    private CourseTaskScheduler ts;
 
-    public SlashListener(Bot b, TaskScheduler ts) {
+    public SlashListener(Bot b, CourseTaskScheduler ts) {
         this.bot = b;
         this.ts = ts;
     }
@@ -32,7 +32,7 @@ public class SlashListener extends ListenerAdapter {
             String session = event.getOption("session").getAsString();
 
             ts.addTask(userId, subjectCode, courseNumber, sectionNumber, session,
-                    60, TimeUnit.SECONDS, true, ThreadLocalRandom.current().nextInt(10));
+                    ThreadLocalRandom.current().nextInt(10), 60, TimeUnit.SECONDS, true);
             event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " added").queue();
         } else if (event.getName().equals("remove")) {
             event.deferReply().queue(); // thinking...

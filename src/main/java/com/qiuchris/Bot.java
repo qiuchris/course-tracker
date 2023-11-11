@@ -14,12 +14,12 @@ import java.net.SocketTimeoutException;
 
 public class Bot {
     private JDA jda;
-    private TaskScheduler ts;
+    private CourseTaskScheduler ts;
     private SlashListener sl;
 
     public Bot(JDA jda) {
         this.jda = jda;
-        this.ts = new TaskScheduler(this);
+        this.ts = new CourseTaskScheduler(this);
         this.sl = new SlashListener(this, ts);
         jda.addEventListener(sl);
         addCommands();

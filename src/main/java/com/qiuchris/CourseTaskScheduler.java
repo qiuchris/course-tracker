@@ -12,33 +12,28 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-public class TaskScheduler {
+public class CourseTaskScheduler {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
     private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, List<String>> userIdTasks = new ConcurrentHashMap<>();
     private Bot bot;
 
-    public TaskScheduler(Bot bot) {
+    public CourseTaskScheduler(Bot bot) {
         this.bot = bot;
     }
 
-    public void addTask(String userId, String subjectCode, String courseNumber, String sectionNumber,
-                        String session, long delay, TimeUnit unit, boolean saveToFile, long initialDelay) {
-
-        String id = paramsToId(userId, subjectCode, courseNumber, sectionNumber, session);
+    public void addTask(CourseTask ct, long initialDelay, long delay, TimeUnit unit, boolean saveToFile) {
+        String id = paramsToTask(userId, subjectCode, courseNumber, sectionNumber, session);
         if (scheduledTasks.containsKey(id)) {
             cancelTask(userId, subjectCode, courseNumber, sectionNumber, session);
         }
+
         Runnable r = () ->
                 bot.checkCourse(userId, subjectCode, courseNumber, sectionNumber, session);
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(r, initialDelay, delay, unit);
         scheduledTasks.put(id, future);
 
-        List<String> userTasks = userIdTasks.get(userId);
-        if (userTasks == null) {
-            userTasks = new ArrayList<>();
-            userIdTasks.put(userId, userTasks);
-        }
+        List<String> userTasks = userIdTasks.computeIfAbsent(userId, k -> new ArrayList<>());
         userTasks.add(id);
 
         JDALogger.getLog("Bot").info("Added " + id + " to maps");
@@ -48,7 +43,7 @@ public class TaskScheduler {
 
     public void cancelTask(String userId, String subjectCode, String courseNumber, String sectionNumber,
                            String session) {
-        String id = paramsToId(userId, subjectCode, courseNumber, sectionNumber, session);
+        String id = paramsToTask(userId, subjectCode, courseNumber, sectionNumber, session);
         if (scheduledTasks.containsKey(id)) {
             ScheduledFuture<?> future = scheduledTasks.get(id);
             future.cancel(true);
@@ -97,8 +92,8 @@ public class TaskScheduler {
                 long delay = Long.parseLong(parts[1]);
                 TimeUnit unit = TimeUnit.valueOf(parts[2]);
                 String[] params = id.split(";", 5);
-                addTask(params[0], params[1], params[2], params[3], params[4], delay, unit, false,
-                        delayShift + ThreadLocalRandom.current().nextInt(10));
+                addTask(params[0], params[1], params[2], params[3], params[4], delayShift + ThreadLocalRandom.current().nextInt(10), delay, unit, false
+                );
                 delayShift += 5;
             }
         } catch (IOException e) {
@@ -110,8 +105,8 @@ public class TaskScheduler {
         return userIdTasks.get(userId);
     }
 
-    public String paramsToId(String userId, String subjectCode, String courseNumber, String sectionNumber,
-                             String session) {
+    public String paramsToTask(String userId, String subjectCode, String courseNumber, String sectionNumber,
+                               String session) {
         return userId + ";" + subjectCode + ";" + courseNumber + ";" + sectionNumber + ";" + session;
     }
 
