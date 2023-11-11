@@ -30,7 +30,7 @@ public class TaskScheduler {
             cancelTask(userId, subjectCode, courseNumber, sectionNumber, session);
         }
         Runnable r = () ->
-                bot.checkSSC(userId, subjectCode, courseNumber, sectionNumber, session);
+                bot.checkCourse(userId, subjectCode, courseNumber, sectionNumber, session);
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(r,5, delay, unit);
         scheduledTasks.put(id, future);
 
@@ -120,7 +120,6 @@ public class TaskScheduler {
     }
 
     public void shutdown() {
-        JDALogger.getLog("Bot").info("Server shutting down...");
         executor.shutdown();
         try {
             if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
