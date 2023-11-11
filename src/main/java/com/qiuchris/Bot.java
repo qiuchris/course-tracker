@@ -8,6 +8,9 @@ import net.dv8tion.jda.internal.utils.JDALogger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.File;
+import java.io.IOException;
+
 public class Bot {
     private JDA jda;
     private TaskScheduler ts;
@@ -19,6 +22,15 @@ public class Bot {
         this.sl = new SlashListener(this, ts);
         jda.addEventListener(sl);
 //        addCommands();
+
+        File f = new File("tasks.txt");
+        try {
+            if (f.createNewFile())
+                JDALogger.getLog("Bot").info("Created tasks.txt");
+        } catch (IOException e) {
+            JDALogger.getLog("Bot").info("Unable to create tasks.txt");
+            throw new RuntimeException(e);
+        }
     }
 
     public void addCommands() {
