@@ -3,7 +3,11 @@ package com.qiuchris;
 import net.dv8tion.jda.internal.utils.JDALogger;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -11,6 +15,7 @@ import java.util.stream.Collectors;
 public class TaskScheduler {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
     private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, List<String>> userIdTasks = new ConcurrentHashMap<>();
     private Bot bot;
 
     public TaskScheduler(Bot bot) {
@@ -28,7 +33,15 @@ public class TaskScheduler {
                 bot.checkSSC(userId, subjectCode, courseNumber, sectionNumber, session);
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(r,5, delay, unit);
         scheduledTasks.put(id, future);
-        JDALogger.getLog("Bot").info("Added " + id + " to map");
+
+        List<String> userTasks = userIdTasks.get(userId);
+        if (userTasks == null) {
+            userTasks = new ArrayList<>();
+            userIdTasks.put(userId, userTasks);
+        }
+        userTasks.add(id);
+
+        JDALogger.getLog("Bot").info("Added " + id + " to maps");
         if (saveToFile)
             saveTaskToFile(id, delay, unit);
     }
@@ -40,7 +53,13 @@ public class TaskScheduler {
             ScheduledFuture<?> future = scheduledTasks.get(id);
             future.cancel(true);
             scheduledTasks.remove(id);
-            JDALogger.getLog("Bot").info("Removed " + id + " from map");
+
+            List<String> userTasks = userIdTasks.get(userId);
+            if (userTasks != null) {
+                userIdTasks.get(userId).remove(id);
+            }
+
+            JDALogger.getLog("Bot").info("Removed " + id + " from maps");
             deleteTaskFromFile(id);
         }
     }
@@ -85,6 +104,10 @@ public class TaskScheduler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<String> getUserIdTasks(String userId) {
+        return userIdTasks.get(userId);
     }
 
     public String paramsToId(String userId, String subjectCode, String courseNumber, String sectionNumber,
