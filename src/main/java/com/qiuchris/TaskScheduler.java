@@ -23,7 +23,7 @@ public class TaskScheduler {
     }
 
     public void addTask(String userId, String subjectCode, String courseNumber, String sectionNumber,
-                        String session, long delay, TimeUnit unit, boolean saveToFile) {
+                        String session, long delay, TimeUnit unit, boolean saveToFile, long initialDelay) {
 
         String id = paramsToId(userId, subjectCode, courseNumber, sectionNumber, session);
         if (scheduledTasks.containsKey(id)) {
@@ -31,7 +31,7 @@ public class TaskScheduler {
         }
         Runnable r = () ->
                 bot.checkCourse(userId, subjectCode, courseNumber, sectionNumber, session);
-        ScheduledFuture<?> future = executor.scheduleAtFixedRate(r,5, delay, unit);
+        ScheduledFuture<?> future = executor.scheduleAtFixedRate(r, initialDelay, delay, unit);
         scheduledTasks.put(id, future);
 
         List<String> userTasks = userIdTasks.get(userId);
@@ -65,12 +65,9 @@ public class TaskScheduler {
     }
 
     private void saveTaskToFile(String id, long delay, TimeUnit unit) {
-        StringBuilder taskLine = new StringBuilder();
-        taskLine.append(id).append(" ").append(delay).append(" ").append(unit);
-        taskLine.append("\n");
-
+        String task = id + " " + delay + " " + unit + "\n";
         try {
-            Files.write(Path.of("tasks.txt"), taskLine.toString().getBytes(), StandardOpenOption.APPEND);
+            Files.write(Path.of("tasks.txt"), task.getBytes(), StandardOpenOption.APPEND);
             JDALogger.getLog("Bot").info("Added " + id + " to file");
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,13 +90,16 @@ public class TaskScheduler {
     public void loadTasksFromFile() {
         try {
             List<String> lines = Files.readAllLines(Paths.get("tasks.txt"));
+            int delayShift = 1;
             for (String line : lines) {
                 String[] parts = line.split(" ", 3);
                 String id = parts[0];
                 long delay = Long.parseLong(parts[1]);
                 TimeUnit unit = TimeUnit.valueOf(parts[2]);
                 String[] params = id.split(";", 5);
-                addTask(params[0], params[1], params[2], params[3], params[4], delay, unit, false);
+                addTask(params[0], params[1], params[2], params[3], params[4], delay, unit, false,
+                        delayShift + ThreadLocalRandom.current().nextInt(10));
+                delayShift += 5;
             }
         } catch (IOException e) {
             e.printStackTrace();

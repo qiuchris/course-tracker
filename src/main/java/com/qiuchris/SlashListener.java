@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class SlashListener extends ListenerAdapter {
@@ -30,7 +31,8 @@ public class SlashListener extends ListenerAdapter {
             String sectionNumber = event.getOption("section_number").getAsString();
             String session = event.getOption("session").getAsString();
 
-            ts.addTask(userId, subjectCode, courseNumber, sectionNumber, session, 60, TimeUnit.SECONDS, true);
+            ts.addTask(userId, subjectCode, courseNumber, sectionNumber, session,
+                    60, TimeUnit.SECONDS, true, ThreadLocalRandom.current().nextInt(10));
             event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " added").queue();
         } else if (event.getName().equals("remove")) {
             event.deferReply().queue(); // thinking...
