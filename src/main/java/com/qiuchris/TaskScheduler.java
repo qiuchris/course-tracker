@@ -1,9 +1,9 @@
 package com.qiuchris;
 
+import net.dv8tion.jda.internal.utils.JDALogger;
+
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -19,6 +19,7 @@ public class TaskScheduler {
 
     public void addTask(String userId, String subjectCode, String courseNumber, String sectionNumber,
                         String session, long delay, TimeUnit unit, boolean saveToFile) {
+
         String id = paramsToId(userId, subjectCode, courseNumber, sectionNumber, session);
         if (scheduledTasks.containsKey(id)) {
             cancelTask(userId, subjectCode, courseNumber, sectionNumber, session);
@@ -27,6 +28,7 @@ public class TaskScheduler {
                 bot.checkSSC(userId, subjectCode, courseNumber, sectionNumber, session);
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(r,5, delay, unit);
         scheduledTasks.put(id, future);
+        JDALogger.getLog("Bot").info("Added " + id + " to map");
         if (saveToFile)
             saveTaskToFile(id, delay, unit);
     }
@@ -38,6 +40,7 @@ public class TaskScheduler {
             ScheduledFuture<?> future = scheduledTasks.get(id);
             future.cancel(true);
             scheduledTasks.remove(id);
+            JDALogger.getLog("Bot").info("Removed " + id + " from map");
             deleteTaskFromFile(id);
         }
     }
@@ -46,8 +49,10 @@ public class TaskScheduler {
         StringBuilder taskLine = new StringBuilder();
         taskLine.append(id).append(" ").append(delay).append(" ").append(unit);
         taskLine.append("\n");
+
         try {
-            Files.write(Paths.get("tasks.txt"), taskLine.toString().getBytes(), StandardOpenOption.APPEND);
+            Files.write(Path.of("tasks.txt"), taskLine.toString().getBytes(), StandardOpenOption.APPEND);
+            JDALogger.getLog("Bot").info("Added " + id + " to file");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,6 +65,7 @@ public class TaskScheduler {
                     .filter(line -> !line.startsWith(id))
                     .collect(Collectors.toList());
             Files.write(Paths.get("tasks.txt"), lines);
+            JDALogger.getLog("Bot").info("Removed " + id + " from file");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,6 +97,7 @@ public class TaskScheduler {
     }
 
     public void shutdown() {
+        JDALogger.getLog("Bot").info("Server shutting down...");
         executor.shutdown();
         try {
             if (!executor.awaitTermination(1, TimeUnit.HOURS)) {

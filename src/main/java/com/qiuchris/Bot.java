@@ -57,6 +57,7 @@ public class Bot {
                 Commands.slash("resume", "Resume tracking."),
                 Commands.slash("stop", "Stop server.")
         ).queue();
+        JDALogger.getLog("Bot").info("Updated slash commands");
     }
 
     public void sendAvailableMessage(String subjectCode, String courseNumber, String sectionNumber,
