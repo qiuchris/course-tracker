@@ -44,7 +44,13 @@ public class SlashListener extends ListenerAdapter {
             ts.cancelTask(userId, subjectCode, courseNumber, sectionNumber, session);
             event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " removed").queue();
         } else if (event.getName().equals("courses")) {
-            event.reply("map size: " + ts.numTasks() + " " + ts.getUserIdTasks(userId)).queue();
+            StringBuilder sb = new StringBuilder("your courses: ");
+            for (String str : ts.getUserIdTasks(userId)) {
+                sb.append("\n");
+                sb.append(ts.idToCourse(str));
+            }
+            event.reply("map size: " + ts.numTasks() + " " +
+                    ts.getUserIdTasks(userId) + "\n" + sb.toString()).queue();
         } else if (event.getName().equals("resume")) {
             event.deferReply().queue();
             ts.loadTasksFromFile();

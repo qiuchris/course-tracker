@@ -115,6 +115,11 @@ public class TaskScheduler {
         return userId + ";" + subjectCode + ";" + courseNumber + ";" + sectionNumber + ";" + session;
     }
 
+    public String idToCourse(String id) {
+        String[] a = id.split(";", 5);
+        return a[1] + " " + a[2] + " " + a[3];
+    }
+
     public int numTasks() {
         return scheduledTasks.size();
     }
