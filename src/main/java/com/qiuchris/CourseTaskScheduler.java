@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class CourseTaskScheduler {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
     private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, List<String>> userIdTasks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, List<CourseTask>> userIdTasks = new ConcurrentHashMap<>();
     private Bot bot;
 
     public CourseTaskScheduler(Bot bot) {
@@ -23,60 +23,58 @@ public class CourseTaskScheduler {
     }
 
     public void addTask(CourseTask ct, long initialDelay, long delay, TimeUnit unit, boolean saveToFile) {
-        String id = paramsToTask(userId, subjectCode, courseNumber, sectionNumber, session);
-        if (scheduledTasks.containsKey(id)) {
-            cancelTask(userId, subjectCode, courseNumber, sectionNumber, session);
+        String key = ct.toKey();
+        if (scheduledTasks.containsKey(key)) {
+            cancelTask(ct);
         }
 
-        Runnable r = () ->
-                bot.checkCourse(userId, subjectCode, courseNumber, sectionNumber, session);
+        Runnable r = () -> bot.checkCourse(ct);
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(r, initialDelay, delay, unit);
-        scheduledTasks.put(id, future);
+        scheduledTasks.put(key, future);
 
-        List<String> userTasks = userIdTasks.computeIfAbsent(userId, k -> new ArrayList<>());
-        userTasks.add(id);
+        List<CourseTask> userTasks = userIdTasks.computeIfAbsent(ct.getUserId(), k -> new ArrayList<>());
+        userTasks.add(ct);
 
-        JDALogger.getLog("Bot").info("Added " + id + " to maps");
+        JDALogger.getLog("Bot").info("Added " + key + " to maps");
         if (saveToFile)
-            saveTaskToFile(id, delay, unit);
+            saveTaskToFile(ct, delay, unit);
     }
 
-    public void cancelTask(String userId, String subjectCode, String courseNumber, String sectionNumber,
-                           String session) {
-        String id = paramsToTask(userId, subjectCode, courseNumber, sectionNumber, session);
-        if (scheduledTasks.containsKey(id)) {
-            ScheduledFuture<?> future = scheduledTasks.get(id);
+    public void cancelTask(CourseTask ct) {
+        String key = ct.toKey();
+        if (scheduledTasks.containsKey(key)) {
+            ScheduledFuture<?> future = scheduledTasks.get(key);
             future.cancel(true);
-            scheduledTasks.remove(id);
+            scheduledTasks.remove(key);
 
-            List<String> userTasks = userIdTasks.get(userId);
+            List<CourseTask> userTasks = userIdTasks.get(ct.getUserId());
             if (userTasks != null) {
-                userIdTasks.get(userId).remove(id);
+                userTasks.remove(ct);
             }
 
-            JDALogger.getLog("Bot").info("Removed " + id + " from maps");
-            deleteTaskFromFile(id);
+            JDALogger.getLog("Bot").info("Removed " + key + " from maps");
+            deleteTaskFromFile(ct);
         }
     }
 
-    private void saveTaskToFile(String id, long delay, TimeUnit unit) {
-        String task = id + " " + delay + " " + unit + "\n";
+    private void saveTaskToFile(CourseTask ct, long delay, TimeUnit unit) {
+        String task = ct.toKey() + " " + delay + " " + unit + "\n";
         try {
             Files.write(Path.of("tasks.txt"), task.getBytes(), StandardOpenOption.APPEND);
-            JDALogger.getLog("Bot").info("Added " + id + " to file");
+            JDALogger.getLog("Bot").info("Added " + ct.toKey() + " to file");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void deleteTaskFromFile(String id) {
+    private void deleteTaskFromFile(CourseTask ct) {
         try {
             List<String> lines = Files.readAllLines(Paths.get("tasks.txt"))
                     .stream()
-                    .filter(line -> !line.startsWith(id))
+                    .filter(line -> !line.startsWith(ct.toKey()))
                     .collect(Collectors.toList());
             Files.write(Paths.get("tasks.txt"), lines);
-            JDALogger.getLog("Bot").info("Removed " + id + " from file");
+            JDALogger.getLog("Bot").info("Removed " + ct.toKey() + " from file");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -92,8 +90,9 @@ public class CourseTaskScheduler {
                 long delay = Long.parseLong(parts[1]);
                 TimeUnit unit = TimeUnit.valueOf(parts[2]);
                 String[] params = id.split(";", 5);
-                addTask(params[0], params[1], params[2], params[3], params[4], delayShift + ThreadLocalRandom.current().nextInt(10), delay, unit, false
-                );
+                addTask(new CourseTask(params[0], params[1], params[2], params[3], params[4]),
+                        delayShift + ThreadLocalRandom.current().nextInt(10),
+                        delay, unit, false);
                 delayShift += 5;
             }
         } catch (IOException e) {
@@ -101,18 +100,8 @@ public class CourseTaskScheduler {
         }
     }
 
-    public List<String> getUserIdTasks(String userId) {
+    public List<CourseTask> getUserIdTasks(String userId) {
         return userIdTasks.get(userId);
-    }
-
-    public String paramsToTask(String userId, String subjectCode, String courseNumber, String sectionNumber,
-                               String session) {
-        return userId + ";" + subjectCode + ";" + courseNumber + ";" + sectionNumber + ";" + session;
-    }
-
-    public String idToCourse(String id) {
-        String[] a = id.split(";", 5);
-        return a[1] + " " + a[2] + " " + a[3];
     }
 
     public int numTasks() {

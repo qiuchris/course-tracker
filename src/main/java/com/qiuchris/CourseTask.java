@@ -17,4 +17,56 @@ public class CourseTask {
     }
 
 
+    @Override
+    public String toString() {
+        return subjectCode + " " + courseNumber + " " + sectionNumber;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CourseTask)) return false;
+
+        CourseTask that = (CourseTask) o;
+
+        if (!userId.equals(that.userId)) return false;
+        if (!subjectCode.equals(that.subjectCode)) return false;
+        if (!courseNumber.equals(that.courseNumber)) return false;
+        if (!sectionNumber.equals(that.sectionNumber)) return false;
+        return session.equals(that.session);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userId.hashCode();
+        result = 31 * result + subjectCode.hashCode();
+        result = 31 * result + courseNumber.hashCode();
+        result = 31 * result + sectionNumber.hashCode();
+        result = 31 * result + session.hashCode();
+        return result;
+    }
+
+    public String toKey() {
+        return userId + ";" + subjectCode + ";" + courseNumber + ";" + sectionNumber + ";" + session;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getSubjectCode() {
+        return subjectCode;
+    }
+
+    public String getCourseNumber() {
+        return courseNumber;
+    }
+
+    public String getSectionNumber() {
+        return sectionNumber;
+    }
+
+    public String getSession() {
+        return session;
+    }
 }

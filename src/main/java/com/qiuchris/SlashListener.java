@@ -31,7 +31,7 @@ public class SlashListener extends ListenerAdapter {
             String sectionNumber = event.getOption("section_number").getAsString();
             String session = event.getOption("session").getAsString();
 
-            ts.addTask(userId, subjectCode, courseNumber, sectionNumber, session,
+            ts.addTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session),
                     ThreadLocalRandom.current().nextInt(10), 60, TimeUnit.SECONDS, true);
             event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " added").queue();
         } else if (event.getName().equals("remove")) {
@@ -41,16 +41,16 @@ public class SlashListener extends ListenerAdapter {
             String sectionNumber = event.getOption("section_number").getAsString();
             String session = event.getOption("session").getAsString();
 
-            ts.cancelTask(userId, subjectCode, courseNumber, sectionNumber, session);
+            ts.cancelTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session));
             event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " removed").queue();
         } else if (event.getName().equals("courses")) {
             StringBuilder sb = new StringBuilder("your courses: ");
-            for (String str : ts.getUserIdTasks(userId)) {
+            for (CourseTask ct : ts.getUserIdTasks(userId)) {
                 sb.append("\n");
-                sb.append(ts.idToCourse(str));
+                sb.append(ct.toString());
             }
             event.reply("map size: " + ts.numTasks() + " " +
-                    ts.getUserIdTasks(userId) + "\n" + sb.toString()).queue();
+                    ts.getUserIdTasks(userId) + "\n" + sb).queue();
         } else if (event.getName().equals("resume")) {
             event.deferReply().queue();
             ts.loadTasksFromFile();

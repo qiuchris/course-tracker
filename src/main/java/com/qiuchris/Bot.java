@@ -34,35 +34,31 @@ public class Bot {
         }
     }
 
-    public void sendAvailableMessage(String userId, String subjectCode, String courseNumber, String sectionNumber,
-                                     String session, String url) {
-        jda.getUserById(userId).openPrivateChannel().flatMap(channel ->
-                channel.sendMessage("<@" + userId + "> " +
-                        subjectCode + " " + courseNumber + " " +
-                        sectionNumber + " is available. Register here: " + url)).queue();
-        JDALogger.getLog("Bot").info("Notifying " + userId + " for " + subjectCode + " " + courseNumber + " " +
-                sectionNumber);
+    public void sendAvailableMessage(CourseTask ct, String url) {
+        jda.getUserById(ct.getUserId()).openPrivateChannel().flatMap(channel ->
+                channel.sendMessage("<@" + ct.getUserId() + "> " +
+                        ct.getSubjectCode() + " " + ct.getCourseNumber() + " " +
+                        ct.getSectionNumber() + " is available. Register here: " + url)).queue();
+        JDALogger.getLog("Bot").info("Notifying " + ct.getUserId() + " for " + ct.getSubjectCode() + " " +
+                ct.getCourseNumber() + " " + ct.getSectionNumber());
     }
 
-    public void checkCourse(String userId, String subjectCode, String courseNumber, String sectionNumber,
-                         String session) {
-        String url = "https://courses.students.ubc.ca/cs/courseschedule?sesscd=" + session +
-                "&pname=subjarea&tname=subj-section&course=" + courseNumber +
-                "&sessyr=2023&section=" + sectionNumber + "&dept=" + subjectCode;
+    public void checkCourse(CourseTask ct) {
+        String url = "https://courses.students.ubc.ca/cs/courseschedule?sesscd=" + ct.getSession() +
+                "&pname=subjarea&tname=subj-section&course=" + ct.getCourseNumber() +
+                "&sessyr=2023&section=" + ct.getSectionNumber() + "&dept=" + ct.getSubjectCode();
         try {
             JDALogger.getLog("Bot").info("Checking SSC at url: " + url);
             Document d = Jsoup.connect(url).timeout(3000).get();
             if (Integer.parseInt(d.select("table > tbody > tr:nth-of-type(1) > td:nth-of-type(2) > strong")
                     .get(0).text()) > 0) {
-                sendAvailableMessage(userId, subjectCode, courseNumber, sectionNumber, session, url);
-                ts.cancelTask(userId, subjectCode, courseNumber, sectionNumber, session);
+                sendAvailableMessage(ct, url);
+                ts.cancelTask(ct);
             }
         } catch (SocketTimeoutException e) {
-            JDALogger.getLog("Bot").info("SocketTimeoutException checking url: " + url);
-            e.printStackTrace();
+            JDALogger.getLog("Bot").error("SocketTimeoutException checking url: " + url);
         } catch (Exception e) {
-            JDALogger.getLog("Bot").info("Failed to check SSC at url: " + url);
-            e.printStackTrace();
+            JDALogger.getLog("Bot").error("Failed to check SSC at url: " + url);
         }
     }
 
@@ -98,8 +94,8 @@ public class Bot {
                         .addOptions(
                                 new OptionData(OptionType.STRING, "session",
                                         "The session that the course is in. (ex. Winter, Summer)", true)
-                                        .addChoice("Winter", "Winter")
-                                        .addChoice("Summer", "Summer")
+                                        .addChoice("Winter", "W")
+                                        .addChoice("Summer", "S")
                         ),
                 Commands.slash("resume", "Resume tracking."),
                 Commands.slash("stop", "Stop server.")
