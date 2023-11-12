@@ -8,30 +8,25 @@ import net.dv8tion.jda.internal.utils.JDALogger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.SocketTimeoutException;
 
 public class Bot {
     private JDA jda;
     private CourseTaskScheduler ts;
+    private CourseTaskManager tm;
     private SlashListener sl;
+
+    public static final String TASKS_PATH = "data/tasks.txt";
+    public static final String COURSE_CODES_PATH = "data/course_codes.txt";
 
     public Bot(JDA jda) {
         this.jda = jda;
         this.ts = new CourseTaskScheduler(this);
-        this.sl = new SlashListener(this, ts);
+        this.tm = new CourseTaskManager(ts);
+        this.sl = new SlashListener(this, tm, ts);
         jda.addEventListener(sl);
-        addCommands();
-
-        File f = new File("tasks.txt");
-        try {
-            if (f.createNewFile())
-                JDALogger.getLog("Bot").info("Created tasks.txt");
-        } catch (IOException e) {
-            JDALogger.getLog("Bot").info("Unable to create tasks.txt");
-            throw new RuntimeException(e);
-        }
+//        updateSlashCommands();
+//        ts.loadTasksFromFile();
     }
 
     public void sendAvailableMessage(CourseTask ct, String url) {
@@ -68,7 +63,7 @@ public class Bot {
         jda.shutdown();
     }
 
-    public void addCommands() {
+    public void updateSlashCommands() {
         jda.updateCommands().addCommands(
                 Commands.slash("add", "Track a specific course.")
                         .addOption(OptionType.STRING, "subject_code",

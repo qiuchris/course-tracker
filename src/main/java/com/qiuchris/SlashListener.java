@@ -4,15 +4,14 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-
 public class SlashListener extends ListenerAdapter {
     private Bot bot;
+    private CourseTaskManager tm;
     private CourseTaskScheduler ts;
 
-    public SlashListener(Bot b, CourseTaskScheduler ts) {
+    public SlashListener(Bot b, CourseTaskManager tm, CourseTaskScheduler ts) {
         this.bot = b;
+        this.tm = tm;
         this.ts = ts;
     }
 
@@ -30,9 +29,7 @@ public class SlashListener extends ListenerAdapter {
             String courseNumber = event.getOption("course_number").getAsString();
             String sectionNumber = event.getOption("section_number").getAsString();
             String session = event.getOption("session").getAsString();
-
-            ts.addTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session),
-                    ThreadLocalRandom.current().nextInt(10), 60, TimeUnit.SECONDS, true);
+            tm.addCourseTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session));
             event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " added").queue();
         } else if (event.getName().equals("remove")) {
             event.deferReply().queue(); // thinking...
@@ -40,8 +37,7 @@ public class SlashListener extends ListenerAdapter {
             String courseNumber = event.getOption("course_number").getAsString();
             String sectionNumber = event.getOption("section_number").getAsString();
             String session = event.getOption("session").getAsString();
-
-            ts.cancelTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session));
+            tm.removeCourseTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session));
             event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " removed").queue();
         } else if (event.getName().equals("courses")) {
             StringBuilder sb = new StringBuilder("your courses: ");

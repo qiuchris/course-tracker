@@ -5,7 +5,6 @@ import net.dv8tion.jda.internal.utils.JDALogger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +59,7 @@ public class CourseTaskScheduler {
     private void saveTaskToFile(CourseTask ct, long delay, TimeUnit unit) {
         String task = ct.toKey() + " " + delay + " " + unit + "\n";
         try {
-            Files.write(Path.of("tasks.txt"), task.getBytes(), StandardOpenOption.APPEND);
+            Files.write(Path.of("data/tasks.txt"), task.getBytes(), StandardOpenOption.APPEND);
             JDALogger.getLog("Bot").info("Added " + ct.toKey() + " to file");
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,11 +68,11 @@ public class CourseTaskScheduler {
 
     private void deleteTaskFromFile(CourseTask ct) {
         try {
-            List<String> lines = Files.readAllLines(Paths.get("tasks.txt"))
+            List<String> lines = Files.readAllLines(Path.of("data/tasks.txt"))
                     .stream()
                     .filter(line -> !line.startsWith(ct.toKey()))
                     .collect(Collectors.toList());
-            Files.write(Paths.get("tasks.txt"), lines);
+            Files.write(Path.of("data/tasks.txt"), lines);
             JDALogger.getLog("Bot").info("Removed " + ct.toKey() + " from file");
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,7 +81,7 @@ public class CourseTaskScheduler {
 
     public void loadTasksFromFile() {
         try {
-            List<String> lines = Files.readAllLines(Paths.get("tasks.txt"));
+            List<String> lines = Files.readAllLines(Path.of("data/tasks.txt"));
             int delayShift = 1;
             for (String line : lines) {
                 String[] parts = line.split(" ", 3);

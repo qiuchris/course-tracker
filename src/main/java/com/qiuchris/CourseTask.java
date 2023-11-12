@@ -16,10 +16,9 @@ public class CourseTask {
         this.session = session;
     }
 
-
     @Override
     public String toString() {
-        return subjectCode + " " + courseNumber + " " + sectionNumber;
+        return subjectCode + " " + courseNumber + " " + sectionNumber + " " + session;
     }
 
     @Override
@@ -34,16 +33,6 @@ public class CourseTask {
         if (!courseNumber.equals(that.courseNumber)) return false;
         if (!sectionNumber.equals(that.sectionNumber)) return false;
         return session.equals(that.session);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userId.hashCode();
-        result = 31 * result + subjectCode.hashCode();
-        result = 31 * result + courseNumber.hashCode();
-        result = 31 * result + sectionNumber.hashCode();
-        result = 31 * result + session.hashCode();
-        return result;
     }
 
     public String toKey() {
