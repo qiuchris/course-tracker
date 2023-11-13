@@ -88,8 +88,8 @@ public class CourseTaskScheduler {
                 String id = parts[0];
                 long delay = Long.parseLong(parts[1]);
                 TimeUnit unit = TimeUnit.valueOf(parts[2]);
-                String[] params = id.split(";", 5);
-                addTask(new CourseTask(params[0], params[1], params[2], params[3], params[4]),
+                String[] params = id.split(";", 7);
+                addTask(new CourseTask(params[0], params[1], params[2], params[3], params[4], params[5], params[6]),
                         delayShift + ThreadLocalRandom.current().nextInt(10),
                         delay, unit, false);
                 delayShift += 5;

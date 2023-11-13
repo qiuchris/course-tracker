@@ -46,12 +46,33 @@ public class CourseTaskManager {
         }
     }
 
-    public void addCourseTask(CourseTask ct) {
-        ts.addTask(ct, ThreadLocalRandom.current().nextInt(10), 60, TimeUnit.SECONDS, true);
+    public void addCourseTask(String course, String session, String seatType, String userId) {
+        if (!course.matches("^[A-Za-z]{2,4} \\d{3}[A-Za-z]? [A-Za-z0-9]{3}$")) {
+            JDALogger.getLog("Bot").info("Invalid course: " + course);
+            throw new IllegalArgumentException();
+        }
+        String[] params = course.split(" ", 3);
+        if (!courseCodes.contains(params[0])) {
+            JDALogger.getLog("Bot").info("Invalid course code: " + params[0]);
+            throw new IllegalArgumentException();
+        }
+        ts.addTask(new CourseTask(userId, params[0], params[1], params[2],
+                        session.substring(0, 4), session.substring(4), seatType),
+                ThreadLocalRandom.current().nextInt(10) + 3, 60, TimeUnit.SECONDS, true);
     }
 
-    public void removeCourseTask(CourseTask ct) {
-        ts.cancelTask(ct);
+    public void removeCourseTask(String course, String session, String seatType, String userId) {
+        if (!course.matches("^[A-Za-z]{2-4} \\d{3}[A-Za-z]? \\[A-Za-z0-9]{3}$")) {
+            JDALogger.getLog("Bot").info("Invalid course: " + course);
+            throw new IllegalArgumentException();
+        }
+        String[] params = course.split(" ", 3);
+        if (!courseCodes.contains(params[0])) {
+            JDALogger.getLog("Bot").info("Invalid course code: " + params[0]);
+            throw new IllegalArgumentException();
+        }
+        ts.cancelTask(new CourseTask(userId, params[0], params[1], params[2],
+                session.substring(0, 4), session.substring(4), seatType));
     }
 
     public void saveCourseCodes() {
@@ -69,10 +90,8 @@ public class CourseTaskManager {
     public void loadCourseCodes() {
         this.courseCodes = new HashSet<>();
         try {
-            for (String s : Files.readAllLines(Paths.get(Bot.COURSE_CODES_PATH))) {
-                courseCodes.add(s);
-            }
-            JDALogger.getLog("Bot").info("Loaded course codes");
+            courseCodes.addAll(Files.readAllLines(Paths.get(Bot.COURSE_CODES_PATH)));
+            JDALogger.getLog("Bot").info("Loaded course codes, size: " + courseCodes.size());
         } catch (IOException e) {
             JDALogger.getLog("Bot").error("IOException loading course codes");
         }

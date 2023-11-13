@@ -25,20 +25,26 @@ public class SlashListener extends ListenerAdapter {
         String userId = event.getUser().getId();
         if (event.getName().equals("add")) {
             event.deferReply().queue(); // thinking...
-            String subjectCode = event.getOption("subject_code").getAsString();
-            String courseNumber = event.getOption("course_number").getAsString();
-            String sectionNumber = event.getOption("section_number").getAsString();
+            String course = event.getOption("course").getAsString();
             String session = event.getOption("session").getAsString();
-            tm.addCourseTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session));
-            event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " added").queue();
+            String seatType = event.getOption("seat_type").getAsString();
+            try {
+                tm.addCourseTask(course, session, seatType, userId);
+                event.getHook().sendMessage(event.getOption("course").getAsString() + " added").queue();
+            } catch (IllegalArgumentException e) {
+                event.getHook().sendMessage("Invalid course").queue();
+            }
         } else if (event.getName().equals("remove")) {
             event.deferReply().queue(); // thinking...
-            String subjectCode = event.getOption("subject_code").getAsString();
-            String courseNumber = event.getOption("course_number").getAsString();
-            String sectionNumber = event.getOption("section_number").getAsString();
+            String course = event.getOption("course").getAsString();
             String session = event.getOption("session").getAsString();
-            tm.removeCourseTask(new CourseTask(userId, subjectCode, courseNumber, sectionNumber, session));
-            event.getHook().sendMessage(subjectCode + " " + courseNumber + " " + sectionNumber + " removed").queue();
+            String seatType = event.getOption("seat_type").getAsString();
+            try {
+                tm.removeCourseTask(course, session, seatType, userId);
+                event.getHook().sendMessage(event.getOption("course").getAsString() + " removed").queue();
+            } catch (IllegalArgumentException e) {
+                event.getHook().sendMessage("Invalid course").queue();
+            }
         } else if (event.getName().equals("courses")) {
             StringBuilder sb = new StringBuilder("your courses: ");
             for (CourseTask ct : ts.getUserIdTasks(userId)) {
