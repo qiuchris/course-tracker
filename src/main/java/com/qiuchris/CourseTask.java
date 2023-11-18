@@ -1,5 +1,12 @@
 package com.qiuchris;
 
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.internal.utils.JDALogger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+import java.net.SocketTimeoutException;
+
 public abstract class CourseTask {
     private String userId;
     private String subjectCode;
@@ -20,7 +27,35 @@ public abstract class CourseTask {
         this.session = session;
     }
 
-    public abstract boolean checkAvailability();
+    public abstract boolean isSeatAvailable(Document d);
+
+    public void sendAvailableMessage(JDA jda) {
+        jda.getUserById(userId).openPrivateChannel().flatMap(channel ->
+                channel.sendMessage("<@" + userId + "> A " + seatType + " seat for " +
+                        subjectCode + " " + courseNumber + " " + sectionNumber +
+                        " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
+                        + session + "&pname=subjarea&tname=subj-section&course=" + courseNumber +
+                        "&sessyr=" + year + "&section=" + sectionNumber + "&dept="
+                        + subjectCode)).queue();
+        JDALogger.getLog("Bot").info("Notifying " + userId + " for " + subjectCode + " " +
+                courseNumber + " " + sectionNumber);
+    }
+
+    public boolean checkAvailability() {
+        String url = "https://courses.students.ubc.ca/cs/courseschedule?sesscd=" + this.getSession() +
+                "&pname=subjarea&tname=subj-section&course=" + this.getCourseNumber() +
+                "&sessyr=" + this.getYear() + "&section=" + this.getSectionNumber() + "&dept=" + this.getSubjectCode();
+        try {
+            JDALogger.getLog("Bot").info("Checking SSC for: " + this);
+            Document d = Jsoup.connect(url).timeout(3000).get();
+            return isSeatAvailable(d);
+        } catch (SocketTimeoutException e) {
+            JDALogger.getLog("Bot").error("SocketTimeoutException checking url: " + url);
+        } catch (Exception e) {
+            JDALogger.getLog("Bot").error("Failed to check SSC at url: " + url);
+        }
+        return false;
+    }
 
     @Override
     public String toString() {

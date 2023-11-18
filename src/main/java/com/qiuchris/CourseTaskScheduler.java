@@ -1,5 +1,6 @@
 package com.qiuchris;
 
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.internal.utils.JDALogger;
 
 import java.io.IOException;
@@ -15,10 +16,10 @@ public class CourseTaskScheduler {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
     private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, List<CourseTask>> userIdTasks = new ConcurrentHashMap<>();
-    private CourseTaskManager tm;
+    private JDA jda;
 
-    public CourseTaskScheduler(CourseTaskManager tm) {
-        this.tm = tm;
+    public CourseTaskScheduler(JDA jda) {
+        this.jda = jda;
     }
 
     public void addTask(CourseTask ct, long initialDelay, long delay, TimeUnit unit, boolean saveToFile) {
@@ -28,7 +29,7 @@ public class CourseTaskScheduler {
         }
 
         Runnable r = () -> {if (ct.checkAvailability()) {
-            tm.sendAvailableMessage(ct);
+            ct.sendAvailableMessage(jda);
             cancelTask(ct);
         }};
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(r, initialDelay, delay, unit);
@@ -92,7 +93,7 @@ public class CourseTaskScheduler {
                 long delay = Long.parseLong(parts[1]);
                 TimeUnit unit = TimeUnit.valueOf(parts[2]);
                 String[] params = id.split(";", 7);
-                if (params[6] == "Restricted") {
+                if (params[6].equals("Restricted")) {
                     addTask(new RestrictedCourseTask(params[0], params[1], params[2], params[3], params[4], params[5]),
                             delayShift + ThreadLocalRandom.current().nextInt(10),
                             delay, unit, false);

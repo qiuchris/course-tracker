@@ -20,12 +20,11 @@ import java.util.concurrent.TimeUnit;
 
 public class CourseTaskManager {
     private JDA jda;
-    private CourseTaskScheduler ts;
+    private CourseTaskScheduler ts = new CourseTaskScheduler(jda);
     private HashSet<String> courseCodes;
 
     public CourseTaskManager(JDA jda) {
         this.jda = jda;
-        this.ts = new CourseTaskScheduler(this);
 
         try {
             if (new File(Bot.COURSE_CODES_PATH).createNewFile())
@@ -93,17 +92,7 @@ public class CourseTaskManager {
         }
     }
 
-    public void sendAvailableMessage(CourseTask ct) {
-        jda.getUserById(ct.getUserId()).openPrivateChannel().flatMap(channel ->
-                channel.sendMessage("<@" + ct.getUserId() + "> A " + ct.getSeatType() + " seat for " +
-                        ct.getSubjectCode() + " " + ct.getCourseNumber() + " " + ct.getSectionNumber() +
-                        " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
-                        + ct.getSession() + "&pname=subjarea&tname=subj-section&course=" + ct.getCourseNumber() +
-                        "&sessyr=" + ct.getYear() + "&section=" + ct.getSectionNumber() + "&dept="
-                        + ct.getSubjectCode())).queue();
-        JDALogger.getLog("Bot").info("Notifying " + ct.getUserId() + " for " + ct.getSubjectCode() + " " +
-                ct.getCourseNumber() + " " + ct.getSectionNumber());
-    }
+    
 
     public List<CourseTask> getUserIdTasks(String userId) {
         return ts.getUserIdTasks(userId);
