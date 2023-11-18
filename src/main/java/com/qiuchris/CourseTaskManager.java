@@ -1,5 +1,6 @@
 package com.qiuchris;
 
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.internal.utils.JDALogger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,22 +14,26 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class CourseTaskManager {
+    private JDA jda;
     private CourseTaskScheduler ts;
     private HashSet<String> courseCodes;
 
-    public CourseTaskManager(CourseTaskScheduler ts) {
-        this.ts = ts;
+    public CourseTaskManager(JDA jda) {
+        this.jda = jda;
+        this.ts = new CourseTaskScheduler(this);
 
         try {
             if (new File(Bot.COURSE_CODES_PATH).createNewFile())
                 JDALogger.getLog("Bot").info("Created " + Bot.COURSE_CODES_PATH);
         } catch (IOException e) {
             JDALogger.getLog("Bot").info("Unable to create " + Bot.COURSE_CODES_PATH);
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            System.exit(1);
         }
 
         try {
@@ -36,7 +41,8 @@ public class CourseTaskManager {
                 JDALogger.getLog("Bot").info("Created " + Bot.TASKS_PATH);
         } catch (IOException e) {
             JDALogger.getLog("Bot").info("Unable to create " + Bot.TASKS_PATH);
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            System.exit(1);
         }
 
         if (new File(Bot.COURSE_CODES_PATH).length() == 0) {
@@ -56,13 +62,20 @@ public class CourseTaskManager {
             JDALogger.getLog("Bot").info("Invalid course code: " + params[0]);
             throw new IllegalArgumentException();
         }
-        ts.addTask(new CourseTask(userId, params[0], params[1], params[2],
-                        session.substring(0, 4), session.substring(4), seatType),
-                ThreadLocalRandom.current().nextInt(10) + 3, 60, TimeUnit.SECONDS, true);
+        if (seatType.equals("Restricted"))
+            ts.addTask(new RestrictedCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
+                            session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
+                    60, TimeUnit.SECONDS, true);
+        else {
+            ts.addTask(new GeneralCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
+                            session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
+                    60, TimeUnit.SECONDS, true);
+        }
+
     }
 
     public void removeCourseTask(String course, String session, String seatType, String userId) {
-        if (!course.matches("^[A-Za-z]{2-4} \\d{3}[A-Za-z]? \\[A-Za-z0-9]{3}$")) {
+        if (!course.matches("^[A-Za-z]{2,4} \\d{3}[A-Za-z]? [A-Za-z0-9]{3}$")) {
             JDALogger.getLog("Bot").info("Invalid course: " + course);
             throw new IllegalArgumentException();
         }
@@ -71,8 +84,41 @@ public class CourseTaskManager {
             JDALogger.getLog("Bot").info("Invalid course code: " + params[0]);
             throw new IllegalArgumentException();
         }
-        ts.cancelTask(new CourseTask(userId, params[0], params[1], params[2],
-                session.substring(0, 4), session.substring(4), seatType));
+        if (seatType.equals("Restricted")) {
+            ts.cancelTask(new GeneralCourseTask(userId, params[0], params[1], params[2],
+                    session.substring(0, 4), session.substring(4)));
+        } else {
+            ts.cancelTask(new RestrictedCourseTask(userId, params[0], params[1], params[2],
+                    session.substring(0, 4), session.substring(4)));
+        }
+    }
+
+    public void sendAvailableMessage(CourseTask ct) {
+        jda.getUserById(ct.getUserId()).openPrivateChannel().flatMap(channel ->
+                channel.sendMessage("<@" + ct.getUserId() + "> A " + ct.getSeatType() + " seat for " +
+                        ct.getSubjectCode() + " " + ct.getCourseNumber() + " " + ct.getSectionNumber() +
+                        " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
+                        + ct.getSession() + "&pname=subjarea&tname=subj-section&course=" + ct.getCourseNumber() +
+                        "&sessyr=" + ct.getYear() + "&section=" + ct.getSectionNumber() + "&dept="
+                        + ct.getSubjectCode())).queue();
+        JDALogger.getLog("Bot").info("Notifying " + ct.getUserId() + " for " + ct.getSubjectCode() + " " +
+                ct.getCourseNumber() + " " + ct.getSectionNumber());
+    }
+
+    public List<CourseTask> getUserIdTasks(String userId) {
+        return ts.getUserIdTasks(userId);
+    }
+
+    public int numTasks() {
+        return ts.getNumTasks();
+    }
+
+    public void resumeTasks() {
+        ts.loadTasksFromFile();
+    }
+
+    public void shutdown() {
+        ts.shutdown();
     }
 
     public void saveCourseCodes() {

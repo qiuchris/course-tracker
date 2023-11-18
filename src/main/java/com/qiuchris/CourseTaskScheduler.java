@@ -15,10 +15,10 @@ public class CourseTaskScheduler {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
     private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, List<CourseTask>> userIdTasks = new ConcurrentHashMap<>();
-    private Bot bot;
+    private CourseTaskManager tm;
 
-    public CourseTaskScheduler(Bot bot) {
-        this.bot = bot;
+    public CourseTaskScheduler(CourseTaskManager tm) {
+        this.tm = tm;
     }
 
     public void addTask(CourseTask ct, long initialDelay, long delay, TimeUnit unit, boolean saveToFile) {
@@ -27,7 +27,10 @@ public class CourseTaskScheduler {
             cancelTask(ct);
         }
 
-        Runnable r = () -> bot.checkCourse(ct);
+        Runnable r = () -> {if (ct.checkAvailability()) {
+            tm.sendAvailableMessage(ct);
+            cancelTask(ct);
+        }};
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(r, initialDelay, delay, unit);
         scheduledTasks.put(key, future);
 
@@ -89,9 +92,15 @@ public class CourseTaskScheduler {
                 long delay = Long.parseLong(parts[1]);
                 TimeUnit unit = TimeUnit.valueOf(parts[2]);
                 String[] params = id.split(";", 7);
-                addTask(new CourseTask(params[0], params[1], params[2], params[3], params[4], params[5], params[6]),
-                        delayShift + ThreadLocalRandom.current().nextInt(10),
-                        delay, unit, false);
+                if (params[6] == "Restricted") {
+                    addTask(new RestrictedCourseTask(params[0], params[1], params[2], params[3], params[4], params[5]),
+                            delayShift + ThreadLocalRandom.current().nextInt(10),
+                            delay, unit, false);
+                } else {
+                    addTask(new GeneralCourseTask(params[0], params[1], params[2], params[3], params[4], params[5]),
+                            delayShift + ThreadLocalRandom.current().nextInt(10),
+                            delay, unit, false);
+                }
                 delayShift += 5;
             }
         } catch (IOException e) {
@@ -103,7 +112,7 @@ public class CourseTaskScheduler {
         return userIdTasks.get(userId);
     }
 
-    public int numTasks() {
+    public int getNumTasks() {
         return scheduledTasks.size();
     }
 

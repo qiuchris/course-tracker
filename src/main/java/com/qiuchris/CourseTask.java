@@ -1,24 +1,26 @@
 package com.qiuchris;
 
-public class CourseTask {
+public abstract class CourseTask {
     private String userId;
     private String subjectCode;
     private String courseNumber;
     private String sectionNumber;
     private String year;
     private String session;
-    private String seatType;
+
+    protected String seatType = "";
 
     public CourseTask(String userId, String subjectCode, String courseNumber,
-                      String sectionNumber, String year, String session, String seatType) {
+                      String sectionNumber, String year, String session) {
         this.userId = userId;
         this.subjectCode = subjectCode;
         this.courseNumber = courseNumber;
         this.sectionNumber = sectionNumber;
         this.year = year;
         this.session = session;
-        this.seatType = seatType;
     }
+
+    public abstract boolean checkAvailability();
 
     @Override
     public String toString() {
