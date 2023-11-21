@@ -14,8 +14,7 @@ public abstract class CourseTask {
     private String sectionNumber;
     private String year;
     private String session;
-
-    protected String seatType = "";
+    protected String seatType = "Any";
 
     public CourseTask(String userId, String subjectCode, String courseNumber,
                       String sectionNumber, String year, String session) {

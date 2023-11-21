@@ -22,6 +22,7 @@ public class CourseTaskManager {
     private JDA jda;
     private CourseTaskScheduler ts = new CourseTaskScheduler(jda);
     private HashSet<String> courseCodes;
+    private HashSet<String> courses;
 
     public CourseTaskManager(JDA jda) {
         this.jda = jda;
@@ -40,6 +41,15 @@ public class CourseTaskManager {
                 JDALogger.getLog("Bot").info("Created " + Bot.TASKS_PATH);
         } catch (IOException e) {
             JDALogger.getLog("Bot").info("Unable to create " + Bot.TASKS_PATH);
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            if (new File(Bot.COURSES_PATH).createNewFile())
+                JDALogger.getLog("Bot").info("Created " + Bot.COURSES_PATH);
+        } catch (IOException e) {
+            JDALogger.getLog("Bot").info("Unable to create " + Bot.COURSES_PATH);
             e.printStackTrace();
             System.exit(1);
         }
@@ -150,6 +160,48 @@ public class CourseTaskManager {
             JDALogger.getLog("Bot").error("SocketTimeoutException updating course codes at url: " + url);
         } catch (Exception e) {
             JDALogger.getLog("Bot").error("Failed to update course codes at url: " + url);
+        }
+    }
+
+    public void saveCourses() {
+        try {
+            Files.write(Path.of(Bot.COURSE_CODES_PATH), "".getBytes());
+            for (String s : courses) {
+                Files.write(Path.of(Bot.COURSE_CODES_PATH), (s + "\n").getBytes(), StandardOpenOption.APPEND);
+            }
+            JDALogger.getLog("Bot").info("Saved course codes");
+        } catch (IOException e) {
+            JDALogger.getLog("Bot").error("IOException saving course codes");
+        }
+    }
+
+    public void loadCourses() {
+        this.courses = new HashSet<>();
+        try {
+            courses.addAll(Files.readAllLines(Paths.get(Bot.COURSE_CODES_PATH)));
+            JDALogger.getLog("Bot").info("Loaded course codes, size: " + courses.size());
+        } catch (IOException e) {
+            JDALogger.getLog("Bot").error("IOException loading course codes");
+        }
+    }
+
+    public void updateCourses() {
+        this.courses = new HashSet<>();
+        String url = "https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-all-departments";
+        try {
+            Document d = Jsoup.connect(url).timeout(3000).get();
+            for (Element row : d.select("td:nth-of-type(1)")) {
+                if (row.hasAttr("href")) {
+                    // check row.attr("href")
+                    courses.add(row.text().substring(0, row.text().length() - 2));
+                }
+            }
+            saveCourses();
+            JDALogger.getLog("Bot").info("Updated courses");
+        } catch (SocketTimeoutException e) {
+            JDALogger.getLog("Bot").error("SocketTimeoutException updating courses at url: " + url);
+        } catch (Exception e) {
+            JDALogger.getLog("Bot").error("Failed to update courses at url: " + url);
         }
     }
 }

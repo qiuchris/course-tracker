@@ -10,6 +10,7 @@ import net.dv8tion.jda.internal.utils.JDALogger;
 public class Bot {
     public static final String TASKS_PATH = "data/tasks.txt";
     public static final String COURSE_CODES_PATH = "data/course_codes.txt";
+    public static final String COURSES_PATH = "data/courses.txt";
 
     private JDA jda;
     private CourseTaskManager tm;
