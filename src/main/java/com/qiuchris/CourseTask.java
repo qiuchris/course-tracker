@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 
 import java.net.SocketTimeoutException;
 
-public abstract class CourseTask {
+public class CourseTask {
     private String userId;
     private String subjectCode;
     private String courseNumber;
@@ -26,7 +26,10 @@ public abstract class CourseTask {
         this.session = session;
     }
 
-    public abstract boolean isSeatAvailable(Document d);
+    public boolean isSeatAvailable(Document d) {
+        return Integer.parseInt(d.select("table > tbody > tr:nth-of-type(1) > td:nth-of-type(2) > strong")
+                .get(0).text()) > 0;
+    }
 
     public void sendAvailableMessage(JDA jda) {
         jda.getUserById(userId).openPrivateChannel().flatMap(channel ->
@@ -46,7 +49,7 @@ public abstract class CourseTask {
                 "&sessyr=" + this.getYear() + "&section=" + this.getSectionNumber() + "&dept=" + this.getSubjectCode();
         try {
             JDALogger.getLog("Bot").info("Checking SSC for: " + this);
-            Document d = Jsoup.connect(url).timeout(3000).get();
+            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).timeout(3000).get();
             return isSeatAvailable(d);
         } catch (SocketTimeoutException e) {
             JDALogger.getLog("Bot").error("SocketTimeoutException checking url: " + url);
@@ -54,6 +57,11 @@ public abstract class CourseTask {
             JDALogger.getLog("Bot").error("Failed to check SSC at url: " + url);
         }
         return false;
+    }
+
+    public String toKey() {
+        return userId + ";" + subjectCode + ";" + courseNumber + ";" +
+                sectionNumber + ";" + year + ";" + session + ";" + seatType;
     }
 
     @Override
@@ -75,11 +83,6 @@ public abstract class CourseTask {
         if (!year.equals(that.year)) return false;
         if (!seatType.equals(that.seatType)) return false;
         return session.equals(that.session);
-    }
-
-    public String toKey() {
-        return userId + ";" + subjectCode + ";" + courseNumber + ";" +
-                sectionNumber + ";" + year + ";" + session + ";" + seatType;
     }
 
     public String getUserId() {
