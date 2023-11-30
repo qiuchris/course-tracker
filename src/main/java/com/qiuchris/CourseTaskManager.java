@@ -94,15 +94,13 @@ public class CourseTaskManager {
             throw new IllegalArgumentException();
         }
         if (seatType.equals("Restricted")) {
-            ts.cancelTask(new GeneralCourseTask(userId, params[0], params[1], params[2],
+            ts.cancelTask(new RestrictedCourseTask(userId, params[0], params[1], params[2],
                     session.substring(0, 4), session.substring(4)));
         } else {
-            ts.cancelTask(new RestrictedCourseTask(userId, params[0], params[1], params[2],
+            ts.cancelTask(new GeneralCourseTask(userId, params[0], params[1], params[2],
                     session.substring(0, 4), session.substring(4)));
         }
     }
-
-    
 
     public List<CourseTask> getUserIdTasks(String userId) {
         return ts.getUserIdTasks(userId);
