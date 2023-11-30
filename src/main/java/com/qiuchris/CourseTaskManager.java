@@ -37,12 +37,17 @@ public class CourseTaskManager {
             throw new IllegalArgumentException();
         }
         String[] params = course.split(" ", 3);
+
         if (seatType.equals("Restricted"))
             ts.addTask(new RestrictedCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
                             session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
                     Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
-        else {
+        else if (seatType.equals("General")){
             ts.addTask(new GeneralCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
+                            session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
+                    Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
+        } else {
+            ts.addTask(new CourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
                             session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
                     Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
         }
@@ -62,8 +67,11 @@ public class CourseTaskManager {
         if (seatType.equals("Restricted")) {
             ts.cancelTask(new RestrictedCourseTask(userId, params[0], params[1], params[2],
                     session.substring(0, 4), session.substring(4)));
-        } else {
+        } else if (seatType.equals("General")) {
             ts.cancelTask(new GeneralCourseTask(userId, params[0], params[1], params[2],
+                    session.substring(0, 4), session.substring(4)));
+        } else {
+            ts.cancelTask(new CourseTask(userId, params[0], params[1], params[2],
                     session.substring(0, 4), session.substring(4)));
         }
     }

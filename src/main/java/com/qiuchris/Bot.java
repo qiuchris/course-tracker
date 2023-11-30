@@ -96,7 +96,7 @@ public class Bot {
                         ),
                 Commands.slash("resume", "Resume tracking.")
         ).queue();
-        JDALogger.getLog("Bot").info("Updated slash commands");
+        JDALogger.getLog("Bot").info("Updated slash commands.");
     }
 
     public void stopServer() {

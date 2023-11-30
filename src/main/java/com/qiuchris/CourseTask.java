@@ -39,8 +39,7 @@ public class CourseTask {
                         + session + "&pname=subjarea&tname=subj-section&course=" + courseNumber +
                         "&sessyr=" + year + "&section=" + sectionNumber + "&dept="
                         + subjectCode)).queue();
-        JDALogger.getLog("Bot").info("Notifying " + userId + " for " + subjectCode + " " +
-                courseNumber + " " + sectionNumber);
+        JDALogger.getLog("Bot").info("Notifying " + userId + " for " + this);
     }
 
     public boolean checkAvailability() {
