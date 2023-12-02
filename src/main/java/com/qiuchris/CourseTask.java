@@ -1,6 +1,7 @@
 package com.qiuchris;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.internal.utils.JDALogger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -27,17 +28,20 @@ public class CourseTask {
     }
 
     public void sendAvailableMessage(JDA jda) {
+        JDALogger.getLog("CourseTask").info("Notifying " + userId + " for " + this);
         try {
-            JDALogger.getLog("CourseTask").info("Notifying " + userId + " for " + this);
-            jda.getUserById(userId).openPrivateChannel().flatMap(channel ->
-                    channel.sendMessage("<@" + userId + "> A " + seatType + " seat for " +
+            jda.openPrivateChannelById(userId).flatMap(channel ->
+                    channel.sendMessage("<@" + userId + "> A " + seatType.toString() + " seat for " +
                             subjectCode + " " + courseNumber + " " + sectionNumber +
                             " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
                             + session + "&pname=subjarea&tname=subj-section&course=" + courseNumber +
                             "&sessyr=" + year + "&section=" + sectionNumber + "&dept="
                             + subjectCode)).queue();
+        } catch (ErrorResponseException e) {
+            System.out.println("ErrorResponseException " + e.getErrorCode());
         } catch (Exception e) {
-            JDALogger.getLog("CourseTask").error("Failed to notify " + userId + " for " + this);
+            e.printStackTrace();
+            System.out.println("Exception sending message to " + userId);
         }
     }
 
