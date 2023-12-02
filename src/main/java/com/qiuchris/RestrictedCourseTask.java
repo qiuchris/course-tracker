@@ -6,7 +6,7 @@ public class RestrictedCourseTask extends CourseTask {
     public RestrictedCourseTask(String userId, String subjectCode, String courseNumber,
                                 String sectionNumber, String year, String session) {
         super(userId, subjectCode, courseNumber, sectionNumber, year, session);
-        seatType = "Restricted";
+        seatType = SeatType.RESTRICTED;
     }
 
     @Override

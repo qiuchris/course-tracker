@@ -47,6 +47,7 @@ public class Bot {
                         break;
                     case "resume":
                         tm.resumeTasks();
+                        System.out.println("map size: " + tm.numTasks());
                         break;
                     case "update":
                         tm.updateValidator();
@@ -73,10 +74,10 @@ public class Bot {
                                         .addChoice("2023S", "2023S")
                         ).addOptions(
                                 new OptionData(OptionType.STRING, "seat_type",
-                                        "Seat availability to track. (ex. Restricted, General)", true)
-                                        .addChoice("Restricted", "Restricted")
-                                        .addChoice("General", "General")
-                                        .addChoice("Any", "Any")
+                                        "Seat availability to track. (General, Restricted, Any)", true)
+                                        .addChoice("General", SeatType.GENERAL.toString())
+                                        .addChoice("Restricted", SeatType.RESTRICTED.toString())
+                                        .addChoice("Any", SeatType.ANY.toString())
                         ),
                 Commands.slash("courses", "List your tracked courses."),
                 Commands.slash("remove", "Stop tracking a specific course.")
@@ -89,12 +90,11 @@ public class Bot {
                                         .addChoice("2023S", "2023S")
                         ).addOptions(
                                 new OptionData(OptionType.STRING, "seat_type",
-                                        "Seat availability to track. (Restricted, General, Any)", true)
-                                        .addChoice("Restricted", "Restricted")
-                                        .addChoice("General", "General")
-                                        .addChoice("Any", "Any")
-                        ),
-                Commands.slash("resume", "Resume tracking.")
+                                        "Seat availability to stop tracking. (General, Restricted, Any)", true)
+                                        .addChoice("General", SeatType.GENERAL.toString())
+                                        .addChoice("Restricted", SeatType.RESTRICTED.toString())
+                                        .addChoice("Any", SeatType.ANY.toString())
+                        )
         ).queue();
         JDALogger.getLog("Bot").info("Updated slash commands.");
     }

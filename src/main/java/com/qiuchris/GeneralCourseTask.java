@@ -6,7 +6,7 @@ public class GeneralCourseTask extends CourseTask {
     public GeneralCourseTask(String userId, String subjectCode, String courseNumber,
                              String sectionNumber, String year, String session) {
         super(userId, subjectCode, courseNumber, sectionNumber, year, session);
-        seatType = "General";
+        seatType = SeatType.GENERAL;
     }
 
     @Override

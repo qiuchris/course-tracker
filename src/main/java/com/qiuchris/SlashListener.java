@@ -44,13 +44,6 @@ public class SlashListener extends ListenerAdapter {
                 sb.append(ct.toString());
             }
             event.reply("map size: " + tm.numTasks() + "\n" + sb).queue();
-        } else if (event.getName().equals("resume")) {
-            event.deferReply().queue();
-            tm.resumeTasks();
-            event.getHook().sendMessage("resumed. map size:" + tm.numTasks()).queue();
-        } else if (event.getName().equals("stop")) {
-            event.reply("stopping server...").queue();
-            bot.stopServer();
         }
     }
 }

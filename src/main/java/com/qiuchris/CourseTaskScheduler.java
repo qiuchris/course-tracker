@@ -2,6 +2,7 @@ package com.qiuchris;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.internal.utils.JDALogger;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ public class CourseTaskScheduler {
     private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, List<CourseTask>> userIdTasks = new ConcurrentHashMap<>();
     private JDA jda;
+    private Logger log = JDALogger.getLog("CourseTaskScheduler");
 
     public CourseTaskScheduler(JDA jda) {
         this.jda = jda;
@@ -38,9 +40,10 @@ public class CourseTaskScheduler {
         List<CourseTask> userTasks = userIdTasks.computeIfAbsent(ct.getUserId(), k -> new ArrayList<>());
         userTasks.add(ct);
 
-        JDALogger.getLog("Bot").info("Added " + key + " to maps");
-        if (saveToFile)
+        log.info("Added " + key + " to maps");
+        if (saveToFile) {
             saveTaskToFile(ct, delay, unit);
+        }
     }
 
     public void cancelTask(CourseTask ct) {
@@ -55,7 +58,7 @@ public class CourseTaskScheduler {
                 userTasks.remove(ct);
             }
 
-            JDALogger.getLog("Bot").info("Removed " + key + " from maps");
+            log.info("Removed " + key + " from maps");
             deleteTaskFromFile(ct);
         }
     }
@@ -64,7 +67,7 @@ public class CourseTaskScheduler {
         String task = ct.toKey() + " " + delay + " " + unit + "\n";
         try {
             Files.write(Path.of("data/tasks.txt"), task.getBytes(), StandardOpenOption.APPEND);
-            JDALogger.getLog("Bot").info("Added " + ct.toKey() + " to file");
+            log.info("Added " + ct.toKey() + " to file");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -77,7 +80,7 @@ public class CourseTaskScheduler {
                     .filter(line -> !line.startsWith(ct.toKey()))
                     .collect(Collectors.toList());
             Files.write(Path.of("data/tasks.txt"), lines);
-            JDALogger.getLog("Bot").info("Removed " + ct.toKey() + " from file");
+            log.info("Removed " + ct.toKey() + " from file");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -93,12 +96,16 @@ public class CourseTaskScheduler {
                 long delay = Long.parseLong(parts[1]);
                 TimeUnit unit = TimeUnit.valueOf(parts[2]);
                 String[] params = id.split(";", 7);
-                if (params[6].equals("Restricted")) {
+                if (params[6].equals(SeatType.RESTRICTED.toString())) {
                     addTask(new RestrictedCourseTask(params[0], params[1], params[2], params[3], params[4], params[5]),
                             delayShift + ThreadLocalRandom.current().nextInt(10),
                             delay, unit, false);
-                } else {
+                } else if (params[6].equals(SeatType.GENERAL.toString())) {
                     addTask(new GeneralCourseTask(params[0], params[1], params[2], params[3], params[4], params[5]),
+                            delayShift + ThreadLocalRandom.current().nextInt(10),
+                            delay, unit, false);
+                } else {
+                    addTask(new CourseTask(params[0], params[1], params[2], params[3], params[4], params[5]),
                             delayShift + ThreadLocalRandom.current().nextInt(10),
                             delay, unit, false);
                 }
