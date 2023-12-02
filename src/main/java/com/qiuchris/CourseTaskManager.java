@@ -12,12 +12,14 @@ import java.util.concurrent.TimeUnit;
 
 public class CourseTaskManager {
     private JDA jda;
-    private CourseTaskScheduler ts = new CourseTaskScheduler(jda);
-    private CourseValidator cv = new CourseValidator();
+    private CourseTaskScheduler ts;
+    private CourseValidator cv;
     private Logger log = JDALogger.getLog("CourseTaskManager");
 
     public CourseTaskManager(JDA jda) {
         this.jda = jda;
+        this.ts = new CourseTaskScheduler(jda);
+        this.cv = new CourseValidator();
 
         try {
             if (new File(Bot.TASKS_PATH).createNewFile())

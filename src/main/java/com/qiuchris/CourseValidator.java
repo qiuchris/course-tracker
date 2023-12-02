@@ -76,13 +76,13 @@ public class CourseValidator {
             Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).timeout(10000).get();
             for (Element row1 : d.select("td:nth-of-type(1) > a")) {
                 if (row1.hasAttr("href")) {
-                    log.info("Updating " + row1.text() + " ...");
+                    log.info("Updating " + row1.text() + "...");
                     Thread.sleep(8000 + r.nextInt(5000));
                     Document e = Jsoup.connect(base_url + row1.attr("href"))
                             .userAgent(Bot.USER_AGENT).timeout(10000).get();
                     for (Element row2 : e.select("td:nth-of-type(1) > a")) {
                         if (row2.hasAttr("href")) {
-                            log.info("Updating " + row2.text() + " ...");
+                            log.info(" Updating " + row2.text() + "...");
                             Thread.sleep(8000 + r.nextInt(5000));
                             Document f = Jsoup.connect(base_url + row2.attr("href"))
                                     .userAgent(Bot.USER_AGENT).timeout(10000).get();
