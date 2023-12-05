@@ -29,7 +29,7 @@ public class Bot {
     public Bot(JDA jda) {
         this.jda = jda;
         this.tm = new CourseTaskManager(jda);
-        jda.addEventListener(new SlashListener(this, tm));
+        jda.addEventListener(new SlashListener(tm));
     }
 
     public void startConsole() {
@@ -38,6 +38,7 @@ public class Bot {
             while (!Thread.currentThread().isInterrupted() && scanner.hasNextLine()) {
                 String input = scanner.nextLine();
                 switch (input) {
+                    case "quit":
                     case "exit":
                     case "stop":
                         stopServer();

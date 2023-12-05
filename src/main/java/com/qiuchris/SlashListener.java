@@ -4,11 +4,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class SlashListener extends ListenerAdapter {
-    private Bot bot;
     private CourseTaskManager tm;
 
-    public SlashListener(Bot b, CourseTaskManager tm) {
-        this.bot = b;
+    public SlashListener(CourseTaskManager tm) {
         this.tm = tm;
     }
 

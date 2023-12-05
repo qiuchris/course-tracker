@@ -11,13 +11,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class CourseTaskManager {
-    private JDA jda;
     private CourseTaskScheduler ts;
     private CourseValidator cv;
     private Logger log = JDALogger.getLog("CourseTaskManager");
 
     public CourseTaskManager(JDA jda) {
-        this.jda = jda;
         this.ts = new CourseTaskScheduler(jda);
         this.cv = new CourseValidator();
 
@@ -32,12 +30,11 @@ public class CourseTaskManager {
     }
 
     public void addCourseTask(String course, String session, String seatType, String userId) {
-        if (course.matches("^[A-Za-z]{2,4} \\d{3}[A-Za-z]? [A-Za-z0-9]{3}$") && cv.validCourse(course)) {
+        if (!(course.matches("^[A-Za-z]{2,4} \\d{3}[A-Za-z]? [A-Za-z0-9]{3}$") && cv.validCourse(course))) {
             log.info("Invalid course: " + course);
             throw new IllegalArgumentException();
         }
         String[] params = course.split(" ", 3);
-
         if (seatType.equals(SeatType.RESTRICTED.toString()))
             ts.addTask(new RestrictedCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
                             session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
@@ -55,7 +52,7 @@ public class CourseTaskManager {
     }
 
     public void removeCourseTask(String course, String session, String seatType, String userId) {
-        if (course.matches("^[A-Za-z]{2,4} \\d{3}[A-Za-z]? [A-Za-z0-9]{3}$") && cv.validCourse(course)) {
+        if (!(course.matches("^[A-Za-z]{2,4} \\d{3}[A-Za-z]? [A-Za-z0-9]{3}$") && cv.validCourse(course))) {
             log.info("Invalid course: " + course);
             throw new IllegalArgumentException();
         }

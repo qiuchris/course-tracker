@@ -9,12 +9,12 @@ import org.jsoup.nodes.Document;
 import java.net.SocketTimeoutException;
 
 public class CourseTask {
-    private String userId;
-    private String subjectCode;
-    private String courseNumber;
-    private String sectionNumber;
-    private String year;
-    private String session;
+    private final String userId;
+    private final String subjectCode;
+    private final String courseNumber;
+    private final String sectionNumber;
+    private final String year;
+    private final String session;
     protected SeatType seatType = SeatType.ANY;
 
     public CourseTask(String userId, String subjectCode, String courseNumber,
@@ -31,7 +31,7 @@ public class CourseTask {
         JDALogger.getLog("CourseTask").info("Notifying " + userId + " for " + this);
         try {
             jda.openPrivateChannelById(userId).flatMap(channel ->
-                    channel.sendMessage("<@" + userId + "> A " + seatType.toString() + " seat for " +
+                    channel.sendMessage("<@" + userId + "> A seat for " +
                             subjectCode + " " + courseNumber + " " + sectionNumber +
                             " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
                             + session + "&pname=subjarea&tname=subj-section&course=" + courseNumber +

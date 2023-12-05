@@ -11,12 +11,13 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CourseValidator {
     private Set<String> courses;
@@ -57,12 +58,14 @@ public class CourseValidator {
     }
 
     public void loadCourses() {
-        this.courses = Collections.synchronizedSet(new HashSet<>());
         try {
-            courses.addAll(Files.readAllLines(Paths.get(Bot.COURSES_PATH)));
+            try (Stream<String> lines = Files.lines(Path.of(Bot.COURSES_PATH))) {
+                this.courses = lines.collect(Collectors.toCollection(() ->
+                        Collections.synchronizedSet(new HashSet<>(32768))));
+            }
             log.info("Loaded courses, size: " + courses.size());
         } catch (IOException e) {
-            log.error("IOException loading courses");
+            log.error("IOException loading courses.");
         }
     }
 
