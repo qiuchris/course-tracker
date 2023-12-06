@@ -70,7 +70,7 @@ public class CourseValidator {
     }
 
     public void updateCourses() {
-        this.courses = Collections.synchronizedSet(new HashSet<>());
+        this.courses = Collections.synchronizedSet(new HashSet<>(32768));
         String base_url = "https://courses.students.ubc.ca";
         String url = "https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-all-departments";
         log.info("Updating courses...");
