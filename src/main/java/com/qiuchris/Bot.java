@@ -15,6 +15,8 @@ public class Bot {
     public static final int DEFAULT_TIME = 300;
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
             "(KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36";
+    public static final String ICON_URL = "https://cdn.discordapp.com/avatars/1166868697542045788/" +
+            "43f2e4d9190d1ba5309bd4adec6207f0.webp?size=160";
 
     private JDA jda;
     private CourseTaskManager tm;

@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class SlashListener extends ListenerAdapter {
-    private final String ICON_URL = "https://cdn.discordapp.com/avatars/1166868697542045788/43f2e4d9190d1ba5309bd4adec6207f0.webp?size=160";
     private CourseTaskManager tm;
 
     public SlashListener(CourseTaskManager tm) {
@@ -17,7 +16,7 @@ public class SlashListener extends ListenerAdapter {
         event.deferReply().queue();
         String userId = event.getUser().getId();
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setFooter("ubc-bot", ICON_URL);
+        eb.setFooter("ubc-bot", Bot.ICON_URL);
         if (event.getName().equals("add")) {
             String course = event.getOption("course").getAsString();
             String session = event.getOption("session").getAsString();

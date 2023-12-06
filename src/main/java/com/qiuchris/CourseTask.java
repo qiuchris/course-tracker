@@ -1,5 +1,6 @@
 package com.qiuchris;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.internal.utils.JDALogger;
@@ -30,13 +31,16 @@ public class CourseTask {
     public void sendAvailableMessage(JDA jda) {
         JDALogger.getLog("CourseTask").info("Notifying " + userId + " for " + this);
         try {
-            jda.openPrivateChannelById(userId).flatMap(channel ->
-                    channel.sendMessage("<@" + userId + "> A seat for " +
-                            subjectCode + " " + courseNumber + " " + sectionNumber +
-                            " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
-                            + session + "&pname=subjarea&tname=subj-section&course=" + courseNumber +
-                            "&sessyr=" + year + "&section=" + sectionNumber + "&dept="
-                            + subjectCode)).queue();
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setFooter("ubc-bot", Bot.ICON_URL);
+            eb.setColor(0x6568c2);
+            eb.setDescription("<@" + userId + "> A seat for " +
+                    subjectCode + " " + courseNumber + " " + sectionNumber +
+                    " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
+                    + session + "&pname=subjarea&tname=subj-section&course=" + courseNumber +
+                    "&sessyr=" + year + "&section=" + sectionNumber + "&dept="
+                    + subjectCode);
+            jda.openPrivateChannelById(userId).flatMap(channel -> channel.sendMessageEmbeds(eb.build())).queue();
         } catch (ErrorResponseException e) {
             System.out.println("ErrorResponseException " + e.getErrorCode());
         } catch (Exception e) {
