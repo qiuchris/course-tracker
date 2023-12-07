@@ -69,6 +69,16 @@ public class CourseValidator {
         }
     }
 
+    public void addCourse(String course) {
+        try {
+            Files.write(Path.of(Bot.COURSES_PATH), (course + "\n").getBytes(), StandardOpenOption.APPEND);
+            courses.add(course);
+            log.info("Saved course");
+        } catch (IOException e) {
+            log.error("IOException saving course");
+        }
+    }
+
     public void updateCourses() {
         this.courses = Collections.synchronizedSet(new HashSet<>(32768));
         String base_url = "https://courses.students.ubc.ca";

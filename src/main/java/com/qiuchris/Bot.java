@@ -2,6 +2,8 @@ package com.qiuchris;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -32,32 +34,55 @@ public class Bot {
         this.jda = jda;
         this.tm = new CourseTaskManager(jda);
         jda.addEventListener(new SlashListener(tm));
+        jda.getPresence().setPresence(OnlineStatus.IDLE,
+                Activity.of(Activity.ActivityType.CUSTOM_STATUS, "sleeping... >_<"));
     }
 
     public void startConsole() {
         consoleThread = new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
             while (!Thread.currentThread().isInterrupted() && scanner.hasNextLine()) {
-                String input = scanner.nextLine();
-                switch (input) {
-                    case "quit":
-                    case "exit":
-                    case "stop":
-                        stopServer();
-                        break;
-                    case "slash":
-                        updateSlashCommands();
-                        break;
-                    case "resume":
-                        tm.resumeTasks();
-                        System.out.println("map size: " + tm.numTasks());
-                        break;
-                    case "update":
-                        tm.updateValidator();
-                        break;
-                    default:
-                        System.out.println("Unknown command: " + input);
-                        break;
+                try {
+                    String[] input = scanner.nextLine().split(" ");
+                    switch (input[0]) {
+                        case "stop":
+                            stopServer();
+                            break;
+                        case "slash":
+                            updateSlashCommands();
+                            break;
+                        case "resume":
+                            tm.resumeTasks();
+                            System.out.println("map size: " + tm.numTasks());
+                            break;
+                        case "update":
+                            tm.updateValidator();
+                            break;
+                        case "add":
+                            switch (input[1]) {
+                                case "task":
+                                    try {
+                                        tm.addCourseTask(input[2] + " " + input[3] + " " + input[4],
+                                                input[5], input[6], input[7]);
+                                    } catch (ArrayIndexOutOfBoundsException e) {
+                                        System.out.println("Invalid command. Usage: add course <course> <session> " +
+                                                "<seat_type> <user_id>");
+                                    }
+                                    break;
+                                case "course":
+                                    tm.addValidCourse(input[2] + " " + input[3] + " " + input[4]);
+                                    break;
+                                default:
+                                    System.out.println("Unknown command: " + input[1]);
+                                    break;
+                            }
+                            break;
+                        default:
+                            System.out.println("Unknown command: " + input);
+                            break;
+                    }
+                } catch (Exception e) {
+                    System.out.println("bad thing happened");
                 }
             }
             scanner.close();

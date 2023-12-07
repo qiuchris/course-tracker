@@ -32,11 +32,11 @@ public class CourseTask {
         JDALogger.getLog("CourseTask").info("Notifying " + userId + " for " + this);
         try {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setFooter("ubc-bot", Bot.ICON_URL);
+            eb.setFooter("ubc bot", Bot.ICON_URL);
             eb.setColor(0x6568c2);
-            eb.setDescription("<@" + userId + "> A seat for " +
+            eb.setDescription("<@" + userId + "> A seat for `" +
                     subjectCode + " " + courseNumber + " " + sectionNumber +
-                    " is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
+                    "` is available. Register here: " + "https://courses.students.ubc.ca/cs/courseschedule?sesscd="
                     + session + "&pname=subjarea&tname=subj-section&course=" + courseNumber +
                     "&sessyr=" + year + "&section=" + sectionNumber + "&dept="
                     + subjectCode);
@@ -55,13 +55,15 @@ public class CourseTask {
                 "&sessyr=" + year + "&section=" + sectionNumber + "&dept=" + subjectCode;
         try {
             JDALogger.getLog("Bot").info("Checking SSC for: " + this);
-            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).timeout(3000).get();
+            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).proxy("192.168.1.89", 56908).get();
+            JDALogger.getLog("Bot").info("Checked SSC for: " + this);
             return isSeatAvailable(d);
         } catch (SocketTimeoutException e) {
             JDALogger.getLog("CourseTask").error("SocketTimeoutException checking url: " + url);
         } catch (Exception e) {
             JDALogger.getLog("CourseTask").error("Failed to check SSC at url: " + url);
         }
+        JDALogger.getLog("Bot").info("Failed checking SSC for: " + this);
         return false;
     }
 

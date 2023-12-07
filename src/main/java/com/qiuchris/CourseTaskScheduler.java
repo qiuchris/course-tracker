@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class CourseTaskScheduler {
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(8);
     private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, List<CourseTask>> userIdTasks = new ConcurrentHashMap<>();
     private JDA jda;
@@ -30,11 +30,15 @@ public class CourseTaskScheduler {
             cancelTask(ct);
         }
 
-        Runnable r = () -> {if (ct.checkAvailability()) {
+        Runnable r = () -> {
+            try {
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1000));
+            } catch (InterruptedException ignored) {}
+            if (ct.checkAvailability()) {
             ct.sendAvailableMessage(jda);
             cancelTask(ct);
         }};
-        ScheduledFuture<?> future = executor.scheduleAtFixedRate(r, initialDelay, delay, unit);
+        ScheduledFuture<?> future = executor.scheduleWithFixedDelay(r, initialDelay, delay, unit);
         scheduledTasks.put(key, future);
 
         List<CourseTask> userTasks = userIdTasks.computeIfAbsent(ct.getUserId(), k -> new ArrayList<>());

@@ -29,17 +29,21 @@ public class CourseTaskManager {
         }
     }
 
-    public void addCourseTask(String course, String session, String seatType, String userId) {
+    public boolean addCourseTask(String course, String session, String seatType, String userId) {
+        if (getUserIdTasks(userId) != null && getUserIdTasks(userId).size() >= 5) {
+            log.info("User " + userId + " has too many tasks");
+            return false;
+        }
         if (!(course.matches("^[A-Za-z]{2,4} \\d{3}[A-Za-z]? [A-Za-z0-9]{3}$") && cv.validCourse(course))) {
             log.info("Invalid course: " + course);
             throw new IllegalArgumentException();
         }
         String[] params = course.split(" ", 3);
-        if (seatType.equals(SeatType.RESTRICTED.toString()))
+        if (seatType.equals(SeatType.RESTRICTED.toString())) {
             ts.addTask(new RestrictedCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
                             session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
                     Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
-        else if (seatType.equals(SeatType.GENERAL.toString())){
+        } else if (seatType.equals(SeatType.GENERAL.toString())){
             ts.addTask(new GeneralCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
                             session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
                     Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
@@ -48,7 +52,7 @@ public class CourseTaskManager {
                             session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
                     Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
         }
-
+        return true;
     }
 
     public void removeCourseTask(String course, String session, String seatType, String userId) {
@@ -67,6 +71,10 @@ public class CourseTaskManager {
             ts.cancelTask(new CourseTask(userId, params[0], params[1], params[2],
                     session.substring(0, 4), session.substring(4)));
         }
+    }
+
+    public void addValidCourse(String course) {
+        cv.addCourse(course);
     }
 
     public void updateValidator() {
