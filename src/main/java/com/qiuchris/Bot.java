@@ -14,11 +14,12 @@ import java.util.Scanner;
 public class Bot {
     public static final String TASKS_PATH = "data/tasks.txt";
     public static final String COURSES_PATH = "data/courses.txt";
-    public static final int DEFAULT_TIME = 300;
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
             "(KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36";
     public static final String ICON_URL = "https://cdn.discordapp.com/avatars/1166868697542045788/" +
             "43f2e4d9190d1ba5309bd4adec6207f0.webp?size=160";
+
+    public static int DEFAULT_TIME = 300;
 
     private JDA jda;
     private CourseTaskManager tm;
@@ -76,6 +77,10 @@ public class Bot {
                                     System.out.println("Unknown command: " + input[1]);
                                     break;
                             }
+                            break;
+                        case "time":
+                            DEFAULT_TIME = Integer.parseInt(input[1]);
+                            System.out.println("set time to " + DEFAULT_TIME);
                             break;
                         default:
                             System.out.println("Unknown command: " + input);
