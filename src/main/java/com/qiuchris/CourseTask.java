@@ -54,16 +54,17 @@ public class CourseTask {
                 "&pname=subjarea&tname=subj-section&course=" + courseNumber +
                 "&sessyr=" + year + "&section=" + sectionNumber + "&dept=" + subjectCode;
         try {
-            JDALogger.getLog("Bot").info("Checking SSC for: " + this);
-            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).proxy("192.168.1.89", 56908).get();
-            JDALogger.getLog("Bot").info("Checked SSC for: " + this);
+            JDALogger.getLog("CourseTask").info("Checking SSC for: " + this);
+//            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).proxy("192.168.1.89", 56908).get();
+            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).get();
+            JDALogger.getLog("CourseTask").info("Checked SSC for: " + this);
             return isSeatAvailable(d);
         } catch (SocketTimeoutException e) {
             JDALogger.getLog("CourseTask").error("SocketTimeoutException checking url: " + url);
         } catch (Exception e) {
+            e.printStackTrace();
             JDALogger.getLog("CourseTask").error("Failed to check SSC at url: " + url);
         }
-        JDALogger.getLog("Bot").info("Failed checking SSC for: " + this);
         return false;
     }
 

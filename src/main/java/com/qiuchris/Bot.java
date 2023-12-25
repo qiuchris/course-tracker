@@ -68,6 +68,8 @@ public class Bot {
                                     } catch (ArrayIndexOutOfBoundsException e) {
                                         System.out.println("Invalid command. Usage: add course <course> <session> " +
                                                 "<seat_type> <user_id>");
+                                    } catch (CourseAvailableException e) {
+                                        System.out.println("Course is currently available");
                                     }
                                     break;
                                 case "course":

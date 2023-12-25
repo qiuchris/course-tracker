@@ -64,6 +64,8 @@ public class CourseTaskScheduler {
 
             log.info("Removed " + key + " from maps");
             deleteTaskFromFile(ct);
+        } else {
+            throw new IllegalArgumentException();
         }
     }
 

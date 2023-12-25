@@ -29,7 +29,7 @@ public class CourseTaskManager {
         }
     }
 
-    public boolean addCourseTask(String course, String session, String seatType, String userId) {
+    public boolean addCourseTask(String course, String session, String seatType, String userId) throws CourseAvailableException {
         if (getUserIdTasks(userId) != null && getUserIdTasks(userId).size() >= 5) {
             log.info("User " + userId + " has too many tasks");
             return false;
@@ -39,19 +39,22 @@ public class CourseTaskManager {
             throw new IllegalArgumentException();
         }
         String[] params = course.split(" ", 3);
+        CourseTask ct;
         if (seatType.equals(SeatType.RESTRICTED.toString())) {
-            ts.addTask(new RestrictedCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
-                            session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
-                    Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
+            ct = new RestrictedCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
+                    session.substring(4));
         } else if (seatType.equals(SeatType.GENERAL.toString())){
-            ts.addTask(new GeneralCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
-                            session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
-                    Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
+            ct = new GeneralCourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
+                            session.substring(4));
         } else {
-            ts.addTask(new CourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
-                            session.substring(4)), ThreadLocalRandom.current().nextInt(10) + 3,
-                    Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
+            ct = new CourseTask(userId, params[0], params[1], params[2], session.substring(0, 4),
+                            session.substring(4));
         }
+        if (ct.checkAvailability()) {
+            throw new CourseAvailableException();
+        }
+        ts.addTask(ct, ThreadLocalRandom.current().nextInt(10) + 3,
+                Bot.DEFAULT_TIME, TimeUnit.SECONDS, true);
         return true;
     }
 

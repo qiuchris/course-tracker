@@ -16,6 +16,7 @@ public class SlashListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         String userId = event.getUser().getId();
+        event.deferReply().queue();
         EmbedBuilder eb = new EmbedBuilder();
         eb.setFooter("ubc bot", Bot.ICON_URL);
         if (tl.canUseToken(userId)) {
@@ -24,13 +25,13 @@ public class SlashListener extends ListenerAdapter {
             eb.setColor(0xff0000);
             eb.setDescription("You are sending commands too quickly! " +
                     "Please wait and try again.");
-            event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+            event.getHook().sendMessageEmbeds(eb.build()).queue();
             return;
         }
         if (!event.isFromGuild()) {
             eb.setColor(0x6568c2);
             eb.setDescription("To use commands, join the Discord server linked in my About Me.");
-            event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+            event.getHook().sendMessageEmbeds(eb.build()).queue();
             return;
         }
         if (event.getName().equals("add")) {
@@ -48,6 +49,10 @@ public class SlashListener extends ListenerAdapter {
             } catch (IllegalArgumentException e) {
                 eb.setColor(0xff0000);
                 eb.setDescription("Unable to add the course to your tracked courses. Check the spelling of the " +
+                        "course and try again, or open a ticket if you believe this is in error.");
+            } catch (CourseAvailableException e) {
+                eb.setColor(0xff0000);
+                eb.setDescription("The course is already available for registration. Check the spelling of the " +
                         "course and try again, or open a ticket if you believe this is in error.");
             }
         } else if (event.getName().equals("remove")) {
@@ -79,6 +84,6 @@ public class SlashListener extends ListenerAdapter {
                 eb.setDescription("No courses tracked.");
             }
         }
-        event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+        event.getHook().sendMessageEmbeds(eb.build()).queue();
     }
 }

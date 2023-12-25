@@ -15,16 +15,15 @@ public class TokenBucketLimiter {
 
     public synchronized boolean canUseToken(String userId) {
         Bucket b = buckets.computeIfAbsent(userId, k -> new Bucket());
+        long now = System.currentTimeMillis();
+        long elapsedTime = now - b.lastFilled;
+        b.tokens = Math.min(b.tokens + (elapsedTime / leakRate), maxTokens);
+        b.lastFilled = now;
         return b.tokens > 0;
     }
 
     public synchronized void useToken(String userId) {
         Bucket b = buckets.computeIfAbsent(userId, k -> new Bucket());
-        long now = System.currentTimeMillis();
-        long elapsedTime = now - b.lastFilled;
-        b.tokens = Math.min(b.tokens + (elapsedTime / leakRate), maxTokens);
-        b.lastFilled = now;
-
         if (b.tokens > 0) {
             b.tokens--;
         }
