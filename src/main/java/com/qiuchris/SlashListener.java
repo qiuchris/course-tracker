@@ -6,9 +6,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class SlashListener extends ListenerAdapter {
     private CourseTaskManager tm;
+    private TokenBucketLimiter tl;
 
     public SlashListener(CourseTaskManager tm) {
         this.tm = tm;
+        this.tl = new TokenBucketLimiter(3, 5000);
     }
 
     @Override
@@ -16,6 +18,15 @@ public class SlashListener extends ListenerAdapter {
         String userId = event.getUser().getId();
         EmbedBuilder eb = new EmbedBuilder();
         eb.setFooter("ubc bot", Bot.ICON_URL);
+        if (tl.canUseToken(userId)) {
+            tl.useToken(userId);
+        } else {
+            eb.setColor(0xff0000);
+            eb.setDescription("You are sending commands too quickly! " +
+                    "Please wait and try again.");
+            event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+            return;
+        }
         if (!event.isFromGuild()) {
             eb.setColor(0x6568c2);
             eb.setDescription("To use commands, join the Discord server linked in my About Me.");
