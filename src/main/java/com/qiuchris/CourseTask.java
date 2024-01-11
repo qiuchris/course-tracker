@@ -55,9 +55,13 @@ public class CourseTask {
                 "&sessyr=" + year + "&section=" + sectionNumber + "&dept=" + subjectCode;
         try {
             JDALogger.getLog("CourseTask").info("Checking SSC for: " + this);
-//            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).proxy("192.168.1.89", 56908).get();
-            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).get();
+            Document d = Jsoup.connect(url).userAgent(Bot.USER_AGENT).proxy(Bot.PROXY).timeout(20000).get();
             JDALogger.getLog("CourseTask").info("Checked SSC for: " + this);
+            if (d.select(".content > strong").size() > 0 && d.select(".content > strong").get(0)
+                    .text().equals("Note: this section is blocked from registration. Check the comments for details " +
+                            "or contact the department for further details.")) {
+                return false;
+            }
             return isSeatAvailable(d);
         } catch (SocketTimeoutException e) {
             JDALogger.getLog("CourseTask").error("SocketTimeoutException checking url: " + url);

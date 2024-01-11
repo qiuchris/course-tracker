@@ -9,6 +9,9 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.internal.utils.JDALogger;
 
+import java.io.File;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.Scanner;
 
 public class Bot {
@@ -17,9 +20,10 @@ public class Bot {
     public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
             "(KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36";
     public static final String ICON_URL = "https://cdn.discordapp.com/avatars/1166868697542045788/" +
-            "43f2e4d9190d1ba5309bd4adec6207f0.webp?size=160";
+            "040b9225e2d99b80dd9a1b745ff5d97a.webp?size=160";
+    public static final Proxy PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("192.168.1.89", 56908));
 
-    public static int DEFAULT_TIME = 300;
+    public static int DEFAULT_TIME = 60;
 
     private JDA jda;
     private CourseTaskManager tm;
@@ -32,23 +36,27 @@ public class Bot {
     }
 
     public Bot(JDA jda) {
+        File data = new File("data");
+        if (!data.exists()) {
+            data.mkdir();
+        }
         this.jda = jda;
         this.tm = new CourseTaskManager(jda);
         jda.addEventListener(new SlashListener(tm));
         jda.getPresence().setPresence(OnlineStatus.IDLE,
-                Activity.of(Activity.ActivityType.CUSTOM_STATUS, "sleeping... >_<"));
+                Activity.of(Activity.ActivityType.CUSTOM_STATUS, "tracking courses"));
     }
 
     public void startConsole() {
         consoleThread = new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
-            while (!Thread.currentThread().isInterrupted() && scanner.hasNextLine()) {
+            while (scanner.hasNextLine()) {
                 try {
                     String[] input = scanner.nextLine().split(" ");
                     switch (input[0]) {
                         case "stop":
                             stopServer();
-                            break;
+                            continue;
                         case "slash":
                             updateSlashCommands();
                             break;
@@ -136,7 +144,6 @@ public class Bot {
 
     public void stopServer() {
         JDALogger.getLog("Bot").info("Server shutting down...");
-        consoleThread.interrupt();
         tm.shutdown();
         jda.shutdown();
         System.exit(0);
