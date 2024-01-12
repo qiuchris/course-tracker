@@ -27,7 +27,6 @@ public class Bot {
 
     private JDA jda;
     private CourseTaskManager tm;
-    private Thread consoleThread;
 
     public static void main(String[] args) {
         String TOKEN = System.getenv("BOT_DISCORD_TOKEN");
@@ -40,6 +39,7 @@ public class Bot {
         if (!data.exists()) {
             data.mkdir();
         }
+
         this.jda = jda;
         this.tm = new CourseTaskManager(jda);
         jda.addEventListener(new SlashListener(tm));
@@ -48,7 +48,7 @@ public class Bot {
     }
 
     public void startConsole() {
-        consoleThread = new Thread(() -> {
+        new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
             while (scanner.hasNextLine()) {
                 try {
@@ -101,8 +101,7 @@ public class Bot {
                 }
             }
             scanner.close();
-        });
-        consoleThread.start();
+        }).start();
     }
 
     public void updateSlashCommands() {
@@ -118,9 +117,9 @@ public class Bot {
                         ).addOptions(
                                 new OptionData(OptionType.STRING, "seat_type",
                                         "Seat availability to track. (General, Restricted, Any)", true)
+                                        .addChoice("Any", SeatType.ANY.toString())
                                         .addChoice("General", SeatType.GENERAL.toString())
                                         .addChoice("Restricted", SeatType.RESTRICTED.toString())
-                                        .addChoice("Any", SeatType.ANY.toString())
                         ),
                 Commands.slash("courses", "List your tracked courses."),
                 Commands.slash("remove", "Stop tracking a specific course.")
@@ -134,9 +133,9 @@ public class Bot {
                         ).addOptions(
                                 new OptionData(OptionType.STRING, "seat_type",
                                         "Seat availability to stop tracking. (General, Restricted, Any)", true)
+                                        .addChoice("Any", SeatType.ANY.toString())
                                         .addChoice("General", SeatType.GENERAL.toString())
                                         .addChoice("Restricted", SeatType.RESTRICTED.toString())
-                                        .addChoice("Any", SeatType.ANY.toString())
                         )
         ).queue();
         JDALogger.getLog("Bot").info("Updated slash commands.");

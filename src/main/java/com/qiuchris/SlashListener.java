@@ -19,9 +19,7 @@ public class SlashListener extends ListenerAdapter {
         event.deferReply().queue();
         EmbedBuilder eb = new EmbedBuilder();
         eb.setFooter("ubc bot", Bot.ICON_URL);
-        if (tl.canUseToken(userId)) {
-            tl.useToken(userId);
-        } else {
+        if (!tl.useToken(userId)) {
             eb.setColor(0xff0000);
             eb.setDescription("You are sending commands too quickly! " +
                     "Please wait and try again.");

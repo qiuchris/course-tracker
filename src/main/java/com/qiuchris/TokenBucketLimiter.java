@@ -13,19 +13,17 @@ public class TokenBucketLimiter {
         this.leakRate = leakRate;
     }
 
-    public synchronized boolean canUseToken(String userId) {
+    public synchronized boolean useToken(String userId) {
         Bucket b = buckets.computeIfAbsent(userId, k -> new Bucket());
         long now = System.currentTimeMillis();
-        long elapsedTime = now - b.lastFilled;
-        b.tokens = Math.min(b.tokens + (elapsedTime / leakRate), maxTokens);
+        b.tokens = Math.min(b.tokens + ((now - b.lastFilled) / leakRate), maxTokens);
         b.lastFilled = now;
-        return b.tokens > 0;
-    }
 
-    public synchronized void useToken(String userId) {
-        Bucket b = buckets.computeIfAbsent(userId, k -> new Bucket());
         if (b.tokens > 0) {
             b.tokens--;
+            return true;
+        } else {
+            return false;
         }
     }
 
