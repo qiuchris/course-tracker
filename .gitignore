@@ -42,7 +42,7 @@ bin/
 .DS_Store
 
 ### data files ###
-data/*.txt
+data/tasks.txt
 
 # Created by https://www.toptal.com/developers/gitignore/api/intellij
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij

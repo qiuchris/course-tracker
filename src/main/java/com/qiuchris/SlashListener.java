@@ -6,11 +6,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class SlashListener extends ListenerAdapter {
     private CourseTaskManager tm;
-    private TokenBucketLimiter tl;
+    private RateLimiter tl;
 
     public SlashListener(CourseTaskManager tm) {
         this.tm = tm;
-        this.tl = new TokenBucketLimiter(3, 5000);
+        this.tl = new RateLimiter(3, 5000);
     }
 
     @Override
@@ -18,7 +18,7 @@ public class SlashListener extends ListenerAdapter {
         String userId = event.getUser().getId();
         event.deferReply().queue();
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setFooter("ubc bot", Bot.ICON_URL);
+        eb.setFooter("course tracker", Bot.ICON_URL);
         if (!tl.useToken(userId)) {
             eb.setColor(0xff0000);
             eb.setDescription("You are sending commands too quickly! " +

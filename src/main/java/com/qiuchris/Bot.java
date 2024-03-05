@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.internal.utils.JDALogger;
 
 import java.io.File;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Scanner;
 
@@ -21,7 +20,7 @@ public class Bot {
             "(KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36";
     public static final String ICON_URL = "https://cdn.discordapp.com/avatars/1166868697542045788/" +
             "040b9225e2d99b80dd9a1b745ff5d97a.webp?size=160";
-    public static final Proxy PROXY = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("192.168.1.89", 56908));
+    public static final Proxy PROXY = Proxy.NO_PROXY;
 
     public static int DEFAULT_TIME = 60;
 
@@ -29,7 +28,7 @@ public class Bot {
     private CourseTaskManager tm;
 
     public static void main(String[] args) {
-        String TOKEN = System.getenv("BOT_DISCORD_TOKEN");
+        String TOKEN = System.getenv("BOT_DISCORD_TOKEN"); // add your bot token to environment variables
         Bot b = new Bot(JDABuilder.createDefault(TOKEN).build());
         b.startConsole();
     }

@@ -3,12 +3,12 @@ package com.qiuchris;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TokenBucketLimiter {
+public class RateLimiter {
     private final long maxTokens;
     private final long leakRate;
     private final Map<String, Bucket> buckets = new HashMap<>();
 
-    public TokenBucketLimiter(long maxTokens, long leakRate) {
+    public RateLimiter(long maxTokens, long leakRate) {
         this.maxTokens = maxTokens;
         this.leakRate = leakRate;
     }

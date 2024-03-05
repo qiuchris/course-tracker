@@ -32,7 +32,7 @@ public class CourseTask {
         JDALogger.getLog("CourseTask").info("Notifying " + userId + " for " + this);
         try {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setFooter("ubc bot", Bot.ICON_URL);
+            eb.setFooter("course tracker", Bot.ICON_URL);
             eb.setColor(0x6568c2);
             eb.setDescription("<@" + userId + "> A seat for `" +
                     subjectCode + " " + courseNumber + " " + sectionNumber +
