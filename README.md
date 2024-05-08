@@ -14,6 +14,6 @@ A work-in-progress course tracking Discord bot for notifying users about course 
 - [Logback](https://github.com/qos-ch/logback)
 
 ## Build
-Build project using Gradle
-Create BOT_DISCORD_TOKEN environment variable
-Start project
+- Build project using Gradle
+- Create BOT_DISCORD_TOKEN environment variable
+- Start project
